@@ -1,6 +1,7 @@
 import os from 'node:os';
 import path from 'node:path';
 import type { SearchResultChunk } from './types';
+import { useBundledModels } from './bundled-models';
 
 /**
  * Cross-encoder re-ranking: a small model reads the question and each candidate passage TOGETHER and scores how well
@@ -21,7 +22,7 @@ async function load() {
     loading = (async () => {
       try {
         const { AutoTokenizer, AutoModelForSequenceClassification, env } = await import('@xenova/transformers');
-        env.allowLocalModels = false;
+        useBundledModels(env);
         env.useBrowserCache = false;
         // Same as the embedder: the package folder is read-only on serverless hosts, the temp folder is where a download can be kept.
         if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {

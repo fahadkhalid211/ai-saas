@@ -28,14 +28,14 @@ export const svDict: TranslationDictionary = {
     globalDefault: 'Global (Engelska)',
   },
   hero: {
-    eyebrow: 'Webbplatsassistent för tjänsteföretag',
+    eyebrow: 'AI-webbplatsassistent för tjänsteföretag',
     title: ['Svara på varje besökare.', 'Boka dem som är redo.'],
     body: 'Omedelbara svar baserade på ditt innehåll. Riktiga bokningar direkt i kalendern.\nDitt team kliver bara in när det verkligen behövs.',
     primaryCta: 'Starta gratis provperiod',
     secondaryCta: 'Testa gratis demo',
     trust: [
       'Svarar enbart från ditt innehåll – gissar aldrig',
-      'Gratis att komma igång – ingen serverkostnad',
+      'Gratis i 14 dagar: kort krävs, avsluta när som helst',
       'Mänsklig eskalering med ett enda klick',
     ],
     turns: [
@@ -218,7 +218,7 @@ export const svDict: TranslationDictionary = {
       },
       {
         q: 'Måste jag ha ett eget konto hos en AI-leverantör?',
-        a: 'Nej. Du kan komma igång direkt med vår kostnadsfria inbyggda motor utan krångel och utan betalkort. Om du föredrar att koppla ditt eget OpenAI-, Google Gemini-, Anthropic- eller Groq-konto kan du lägga till din nyckel helt utan plattformspåslag.',
+        a: 'Nej. Du kan testa direkt med vår kostnadsfria inbyggda motor, utan nyckel och utan inställningar. För din skarpa assistent kopplar du ditt eget OpenAI-, Google Gemini-, Anthropic- eller Groq-konto (eller DeepSeek eller en egen modell) genom att klistra in dess nyckel, så att leverantören fakturerar användningen direkt till sina priser och Crescelo lägger inte på något påslag.',
       },
       {
         q: 'Kan en medarbetare ta över en pågående chatt?',

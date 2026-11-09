@@ -10,7 +10,7 @@ import { BlogBody } from '@/components/marketing/BlogBody';
 import { ButtonLink } from '@/components/marketing/ui';
 import { SITE } from '@/components/marketing/content';
 import { PUBLISHED_INDEX } from '@/lib/blog';
-import { isIndexable } from '@/lib/blog/indexing';
+import { CANONICAL_ELSEWHERE, isIndexable } from '@/lib/blog/indexing';
 import { blogLanguages, getPostInLocale, hasBlogTranslation, translatedSlugs } from '@/lib/blog/translated';
 import { getLocale } from '@/lib/i18n/server';
 import { LocaleAlternates } from '@/components/i18n/LocaleAlternates';
@@ -24,6 +24,10 @@ import { BlogViewBeacon } from '@/components/marketing/BlogViewBeacon';
 import { blogImageUrl, blogPostingSchema, breadcrumbSchema, faqSchema } from '@/lib/schema';
 import { withSocial } from '@/lib/seo';
 import { Check, Clock } from 'lucide-react';
+import { topicForCard } from '@/lib/blog/topics';
+import { industryForArticle } from '@/lib/industries';
+import { featureBySlug } from '@/lib/product-features';
+import { productFeatureFor } from '@/lib/blog/product-link';
 import { GoogleTranslateFallback } from '@/components/i18n/GoogleTranslateFallback';
 
 /**
@@ -73,7 +77,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     `/blog/${post.slug}`
   );
   const image = { url: blogImageUrl(post.slug), width: 1200, height: 630, alt: post.title };
-  return localizeMeta({
+  const owner = CANONICAL_ELSEWHERE[post.slug];
+  const built = await localizeMeta({
     ...meta,
     twitter: { ...meta.twitter, title: post.seoTitle || post.title, images: [image] },
     openGraph: {
@@ -88,6 +93,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       tags: post.tags,
     },
   }, { languages: blogLanguages(post.slug) });
+  // An article whose subject is owned by another page points search engines at that page and offers no language alternates.
+  return owner ? { ...built, alternates: { canonical: `${SITE.url}${owner}` } } : built;
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -103,7 +110,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const url = `${SITE.url}${localizeHref(`/blog/${post.slug}`, locale)}`;
 
   const breadcrumbs = breadcrumbSchema([
-    { name: 'Blog & Glossary', path: '/blog' },
+    { name: 'Knowledge Hub', path: '/blog' },
     { name: post.title, path: `/blog/${post.slug}` },
   ]);
 
@@ -136,10 +143,21 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               </Link>{' '}
               {post.clusterName && (
                 <>
-                  / <span><T>{post.clusterName}</T></span>
+                  / {topicForCard(post) ? (
+                    <Link href={`/blog/topic/${topicForCard(post)!.slug}`} style={{ color: 'inherit', textDecoration: 'underline' }}><T>{post.clusterName}</T></Link>
+                  ) : (
+                    <span><T>{post.clusterName}</T></span>
+                  )}
                 </>
               )}
             </nav>
+
+            {CANONICAL_ELSEWHERE[post.slug] && (
+              <p role="note" className="mk-card" style={{ marginBottom: '1.25rem', padding: '0.8rem 1.1rem' }}>
+                <T>Looking for the step-by-step guide to adding the Crescelo assistant to WordPress?</T>{' '}
+                <Link href={CANONICAL_ELSEWHERE[post.slug]} style={{ textDecoration: 'underline', fontWeight: 700 }}><T>Open the WordPress guide →</T></Link>
+              </p>
+            )}
 
             {locale !== 'en' && !found.translated && (
               <GoogleTranslateFallback targetLocale={locale} />
@@ -210,7 +228,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 </time>
                 <span>·</span>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: '#16a34a', fontWeight: 600 }}>
-                  <Check className="h-3.5 w-3.5 text-emerald-600 inline" /> <T>Fact-Checked & Grounded</T>
+                  <Check className="h-3.5 w-3.5 text-emerald-600 inline" />{' '}
+                  <Link href="/about#editorial" style={{ color: 'inherit', textDecoration: 'underline' }}><T>How we write and check articles</T></Link>
                 </span>
               </div>
             </header>
@@ -264,29 +283,35 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   </div>
                 </div>
 
-                {/* Related Articles Bottom Grid */}
-                {related.length > 0 && (
-                  <aside aria-label="Related articles" style={{ marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid var(--mk-border, #e2e8f0)' }}>
-                    <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--mk-ink)' }}>
-                      <T>Recommended Next Reading</T>
-                    </h2>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1rem' }}>
-                      {related.map((r) => (
-                        <div key={r.slug} className="mk-card" style={{ padding: '1.25rem', borderRadius: '8px' }}>
-                          <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#2563eb', marginBottom: '0.4rem' }}>
-                            <T>{r.clusterName || 'Guide'}</T> · ⏱️ <T>{r.readMinutes}</T>m
-                          </p>
-                          <Link href={`/blog/${r.slug}`} locale={relatedHere.has(r.slug) ? undefined : 'en'} className="mk-animated-link" style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--mk-ink)' }}>
-                            <T>{r.title}</T>
+                {/* Where this fits in the product: the feature page and, when there is one, the industry page. The "more in this topic" list stays in the sidebar, so the two never repeat each other. */}
+                {(() => {
+                  const feature = featureBySlug(productFeatureFor(post.slug, post.title, post.tags));
+                  const industry = industryForArticle(post.slug, `${post.title} ${post.tags.join(' ')}`);
+                  if (!feature && !industry) return null;
+                  return (
+                    <aside aria-label="Where this fits in Crescelo" style={{ marginTop: '3.5rem', paddingTop: '2rem', borderTop: '1px solid var(--mk-border, #e2e8f0)' }}>
+                      <h2 style={{ fontSize: '1.4rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--mk-ink)' }}>
+                        <T>Where this fits in Crescelo</T>
+                      </h2>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1rem' }}>
+                        {feature && (
+                          <Link href={`/product/${feature.slug}`} className="mk-card" style={{ padding: '1.25rem', borderRadius: '8px', textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#2563eb', marginBottom: '0.4rem' }}><T>Feature</T></p>
+                            <span style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--mk-ink)' }}><T>{feature.name}</T></span>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--mk-muted)', marginTop: '0.4rem', lineHeight: 1.5 }}><T>{feature.seoDescription}</T></p>
                           </Link>
-                          <p style={{ fontSize: '0.85rem', color: 'var(--mk-muted)', marginTop: '0.4rem', lineHeight: 1.5 }}>
-                            <T>{r.excerpt}</T>
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </aside>
-                )}
+                        )}
+                        {industry && (
+                          <Link href={`/use-case/${industry.slug}`} className="mk-card" style={{ padding: '1.25rem', borderRadius: '8px', textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', color: '#2563eb', marginBottom: '0.4rem' }}><T>Industry</T></p>
+                            <span style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--mk-ink)' }}>{industry.name}</span>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--mk-muted)', marginTop: '0.4rem', lineHeight: 1.5 }}>{industry.seoDescription}</p>
+                          </Link>
+                        )}
+                      </div>
+                    </aside>
+                  );
+                })()}
               </article>
 
               {/* Right Sticky Sidebar */}
@@ -356,7 +381,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                     </ul>
                     <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--mk-border, #f1f5f9)' }}>
                       <Link href="/blog" className="mk-animated-link" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#2563eb' }}>
-                        <T>Browse all 200 guides →</T>
+                        <T>Browse all guides →</T>
                       </Link>
                     </div>
                   </div>

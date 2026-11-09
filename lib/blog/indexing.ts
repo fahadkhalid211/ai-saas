@@ -13,7 +13,7 @@ import { NOT_CRAWLED_SLUGS } from './not-indexed';
 const CITY_PAGE = /^how-to-grow-an?-.+-in-.+-with-ai$/;
 
 /** Advice for people applying for jobs. It does not match what the site is about (a website assistant for service businesses). */
-const JOB_SEEKER_SLUGS = new Set([
+export const JOB_SEEKER_SLUGS: ReadonlySet<string> = new Set([
   'is-it-legal-to-use-ai-chatbots-for-hiring',
   'ai-screening-vs-human-recruiters-cost-comparison',
   'how-ai-chatbots-screen-job-applications',
@@ -43,6 +43,15 @@ const JOB_SEEKER_SLUGS = new Set([
   'how-to-tell-if-a-company-uses-ai-chatbots-for-hiring',
   'should-you-be-honest-with-ai-chatbots-during-job-applications',
 ]);
+
+/**
+ * Articles whose subject is owned by a better page. The article stays live and indexable-by-link, but search engines are told the other
+ * address is the one to rank (canonical) and it is not put in the sitemap. One page per query: the WordPress guide is the owner for
+ * "add an AI assistant to WordPress", so this article no longer competes with it.
+ */
+export const CANONICAL_ELSEWHERE: Readonly<Record<string, string>> = {
+  'install-ai-chatbot-wordpress-guide': '/guides/add-ai-assistant-to-wordpress',
+};
 
 /** True when the article may appear in search results and the sitemap. */
 export function isIndexable(slug: string): boolean {

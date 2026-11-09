@@ -2,6 +2,7 @@
 import os from 'node:os';
 import path from 'node:path';
 import { embeddingProfile, markEmbeddingModel } from './embedding-profile';
+import { useBundledModels } from './bundled-models';
 
 let extractorPromise: Promise<any> | null = null;
 
@@ -11,7 +12,7 @@ async function getExtractor() {
       try {
         const { pipeline, env } = await import('@xenova/transformers');
         // Configure local caching
-        env.allowLocalModels = false;
+        useBundledModels(env);
         env.useBrowserCache = false;
         // The package's own folder is read-only on serverless hosts; the temp folder is the one place a download can be kept.
         if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {

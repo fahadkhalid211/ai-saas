@@ -28,14 +28,14 @@ export const esDict: TranslationDictionary = {
     globalDefault: 'Global (Inglés)',
   },
   hero: {
-    eyebrow: 'Asistente web para empresas de servicios',
+    eyebrow: 'Asistente web de IA para empresas de servicios',
     title: ['Responde a cada visitante.', 'Agenda a los que están listos.'],
     body: 'Respuestas instantáneas basadas en tu contenido. Citas reales en tu calendario.\nTu equipo interviene únicamente cuando es necesario.',
     primaryCta: 'Comenzar prueba gratuita',
     secondaryCta: 'Probar demo gratis',
     trust: [
       'Responde únicamente desde tu propio contenido – nunca inventa',
-      'Comienza gratis – sin costos de cómputo para ti',
+      'Gratis durante 14 días: requiere tarjeta, cancela cuando quieras',
       'Intervención humana con un solo clic',
     ],
     turns: [
@@ -218,7 +218,7 @@ export const esDict: TranslationDictionary = {
       },
       {
         q: '¿Necesito una cuenta propia de proveedor de IA?',
-        a: 'No. Puedes empezar de inmediato utilizando nuestro motor integrado gratuito sin configuraciones complejas y sin tarjeta. Si prefieres conectar tu propia cuenta de OpenAI, Google Gemini, Anthropic o Groq, puedes ingresar tu clave sin comisiones de plataforma.',
+        a: 'No. Puedes probar de inmediato con nuestro motor integrado gratuito, sin clave ni configuración. Para tu asistente en producción conectas tu propia cuenta de OpenAI, Google Gemini, Anthropic o Groq (o DeepSeek o un modelo alojado por ti) pegando su clave, de modo que tu proveedor te factura el uso directamente a sus tarifas y Crescelo no añade ningún recargo.',
       },
       {
         q: '¿Puede una persona tomar el control de una conversación en vivo?',

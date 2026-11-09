@@ -2,10 +2,8 @@ import { localizeMeta } from '@/lib/i18n/metadata';
 import type { Metadata } from 'next';
 import { withSocial } from '@/lib/seo';
 import type { ReactNode } from 'react';
-import { JsonLd } from '@/components/marketing/JsonLd';
-import { breadcrumbSchema, softwareSchema, webPageSchema } from '@/lib/schema';
 
-const description = 'Connect Crescelo to Google Calendar, Slack, Google Sheets, webhooks and Zapier, plus WhatsApp, Telegram, phone and the AI provider you choose.';
+const description = 'Connect Crescelo to WhatsApp, Telegram, Slack, Google Sheets and webhooks, subscribe to bookings in your calendar app and use your own AI provider.';
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizeMeta(withSocial({
@@ -15,11 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }, '/integrations'));
 }
 
+// The page's own structured data lives in page.tsx, so the pages under /integrations/<slug> do not inherit this page's.
 export default function Layout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <JsonLd data={[webPageSchema('Calendar, Messaging & AI Integrations', description, '/integrations', 'WebPage'), breadcrumbSchema([{ name: 'Integrations', path: '/integrations' }])]} />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }

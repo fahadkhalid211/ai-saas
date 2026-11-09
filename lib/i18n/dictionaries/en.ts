@@ -28,14 +28,14 @@ export const enDict: TranslationDictionary = {
     globalDefault: 'Global (English)',
   },
   hero: {
-    eyebrow: 'Website assistant for service businesses',
+    eyebrow: 'AI website assistant for service businesses',
     title: ['Answer every visitor.', 'Book the ones who are ready.'],
     body: 'Instant answers from your content. Real bookings into your calendar.\nYour team steps in only when it matters.',
     primaryCta: 'Start free trial',
     secondaryCta: 'Try free Demo',
     trust: [
       'Answers from your own content, and says when it does not know',
-      'Free to start — zero compute cost',
+      'Free for 14 days: card required, cancel any time',
       'Human takeover in one click',
     ],
     turns: [
@@ -218,7 +218,7 @@ export const enDict: TranslationDictionary = {
       },
       {
         q: 'Do I need my own AI provider account?',
-        a: 'No. You can get started right away using our free built-in engine with zero setup and no card required. If you prefer to connect your own OpenAI, Google Gemini, Anthropic or Groq account, you can plug in your existing key with zero platform markup.',
+        a: 'No. You can test right away on our free built-in engine, with no key and no setup. For your live assistant you connect your own OpenAI, Google Gemini, Anthropic or Groq account (or DeepSeek or a self-hosted model) by pasting its key, so your provider bills the usage directly at their rates and Crescelo adds no markup.',
       },
       {
         q: 'Can a person take over a live conversation?',

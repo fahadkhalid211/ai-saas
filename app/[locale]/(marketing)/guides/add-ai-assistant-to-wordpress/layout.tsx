@@ -7,7 +7,7 @@ import { breadcrumbSchema } from '@/lib/schema';
 
 const title = 'How to Add an AI Assistant to WordPress | Crescelo Guide';
 const description =
-  'Step by step: add the Crescelo chat assistant to a WordPress site with a plugin or Elementor, check it is installed, and fix the usual problems (cache, stripped scripts, wrong address).';
+  'Add the Crescelo chat assistant to WordPress with a plugin or Elementor, check it is installed and fix common problems: cache, stripped scripts, wrong address.';
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizeMeta(withSocial({

@@ -16,7 +16,7 @@ const SERVICES = [
     kicker: 'Custom LLM Integration',
     title: 'AI Chatbots & Assistants',
     body: 'Purpose-built conversational AI trained on your data, integrated into your existing stack. From customer support to internal knowledge bases.',
-    tags: ['GPT-4o', 'Claude', 'Gemini', 'Llama'],
+    tags: ['GPT-5', 'Claude', 'Gemini', 'Llama'],
   },
   {
     icon: Brain,
@@ -83,10 +83,11 @@ const PROCESS = [
   },
 ];
 
+// What we commit to, not measured outcomes: no client results are published here until a named client agrees to them.
 const RESULTS = [
-  { value: '12h', label: 'Average response time on enquiries' },
-  { value: '3×', label: 'Faster delivery vs. hiring in-house' },
-  { value: '100%', label: 'Projects delivered with working demo first' },
+  { value: '1 day', label: 'Reply to every enquiry, on business days' },
+  { value: 'Demo', label: 'Working demo before the final payment' },
+  { value: '0', label: 'Lock-in contracts: you own what we build' },
   { value: '24/7', label: 'Deployed AI running around the clock' },
 ];
 
@@ -334,7 +335,7 @@ function QuoteForm() {
         ><Check className="h-6 w-6" /></div>
         <h3 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', marginBottom: '0.625rem' }}>Quote request received!</h3>
         <p style={{ color: 'var(--mk-muted)', maxWidth: '44ch', marginInline: 'auto', fontSize: '0.9688rem' }}>
-          We&apos;ll review your project details and get back to you within 12 business hours with a tailored proposal. Check your inbox — a copy is on its way.
+          We&apos;ll review your project details and get back to you within one business day with a tailored proposal. Check your inbox — a copy is on its way.
         </p>
         <button
           type="button"
@@ -480,7 +481,7 @@ function QuoteForm() {
 
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', paddingTop: '0.5rem' }}>
         <p style={{ fontSize: '0.8125rem', color: 'var(--mk-muted)', maxWidth: '42ch' }}>
-          No obligation. We respond within 12 business hours with a tailored proposal.
+          No obligation. We reply within one business day with a tailored proposal.
         </p>
         <button
           type="submit"
@@ -547,7 +548,7 @@ export default function CustomAIPage() {
               className="mk-trust mk-rise"
               style={{ ['--mk-delay' as string]: '720ms' }}
             >
-              {['No lock-in contracts', 'Working demo before final payment', 'BYOK or managed AI keys', 'Respond in 12h'].map((t) => (
+              {['No lock-in contracts', 'Working demo before final payment', 'BYOK or managed AI keys', 'Reply within one business day'].map((t) => (
                 <li key={t}>{t}</li>
               ))}
             </ul>
@@ -564,7 +565,7 @@ export default function CustomAIPage() {
                 ['--mk-delay' as string]: '840ms',
               }}
             >
-              {['GPT-4o', 'Claude 3.7', 'Gemini 2.5', 'Llama 3.3', 'Mistral', 'LangChain', 'LlamaIndex', 'Pinecone', 'Supabase pgvector', 'Next.js', 'FastAPI'].map((tech) => (
+              {['GPT-5', 'Claude Sonnet 5.5', 'Gemini 3', 'Llama 3.3', 'Mistral', 'LangChain', 'LlamaIndex', 'Pinecone', 'Supabase pgvector', 'Next.js', 'FastAPI'].map((tech) => (
                 <span
                   key={tech}
                   style={{
@@ -824,7 +825,7 @@ export default function CustomAIPage() {
                   {[
                     { layer: 'User interface', tech: 'React / Next.js', color: 'var(--mk-lav)' },
                     { layer: 'Orchestration', tech: 'LangChain Agents', color: 'var(--mk-lime-soft)' },
-                    { layer: 'Language model', tech: 'Claude 3.7 Sonnet', color: 'var(--mk-bg-tint)' },
+                    { layer: 'Language model', tech: 'Claude Sonnet 5.5', color: 'var(--mk-bg-tint)' },
                     { layer: 'Knowledge base', tech: 'pgvector + RAG', color: 'var(--mk-warn-soft)' },
                     { layer: 'Integrations', tech: 'Slack · CRM · Calendar', color: '#ffe3f9' },
                     { layer: 'Infrastructure', tech: 'Vercel + Supabase', color: '#ffd9d0' },
@@ -904,7 +905,7 @@ export default function CustomAIPage() {
               id="cai-quote-title"
               as="h2"
               eyebrow="Get a Quote"
-              title="Tell us about your project. We'll get back to you in 12 hours."
+              title="Tell us about your project. We'll reply within one business day."
               intro="No obligation, no sales call required to get a written proposal. Just fill in the details below and our engineering team will review and respond with a tailored quote."
               align="center"
             />
@@ -953,14 +954,14 @@ export default function CustomAIPage() {
               Your AI project starts with one conversation.
             </h2>
             <p className="mk-lead" style={{ color: '#cfe3d6', textAlign: 'center', marginInline: 'auto' }}>
-              Book a free 30-minute scoping call. No pitch, no pressure — just an honest answer on whether AI can help and what it would take.
+              Request a free 30-minute scoping call and we will arrange a time by email. No pitch, no pressure — just an honest answer on whether AI can help and what it would take.
             </p>
             <div className="mk-cta-row" style={{ justifyContent: 'center' }}>
               <a href="#get-quote" className="mk-btn mk-btn-primary" style={{ background: 'var(--mk-lime)', color: 'var(--mk-deep)', borderColor: 'var(--mk-lime)', boxShadow: '0 0.1875rem 0 #4b9a1e' }}>
                 Get a Free Quote
               </a>
               <Link href="/support/contact" className="mk-btn mk-btn-ghost" style={{ background: 'transparent', color: 'var(--mk-bg)', borderColor: 'rgba(255,254,235,0.4)' }}>
-                Talk to an engineer
+                Request a scoping call
               </Link>
             </div>
           </div>

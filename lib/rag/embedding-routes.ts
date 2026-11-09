@@ -35,3 +35,23 @@ export const EMBEDDING_ROUTES: string[] = [
 ];
 
 export const ONNX_RUNTIME_FILES = './node_modules/onnxruntime-node/bin/napi-v3/linux/x64/**/*';
+
+/**
+ * The routes that search the knowledge base (they reach lib/rag/retrieval), and so may re-rank with the cross-encoder.
+ * Only these get its model file; the others only embed text. Checked by lib/rag/embedding-routes.test.ts.
+ */
+export const RERANK_ROUTES: string[] = [
+  '/api/channels/instagram',
+  '/api/channels/telegram',
+  '/api/channels/tiktok',
+  '/api/channels/whatsapp',
+  '/api/chat',
+  '/api/mcp',
+  '/api/voice/end',
+  '/api/voice/session',
+  '/api/voice/turn',
+];
+
+/** The search models are copied to ./models before the build (scripts/fetch-models.mjs). */
+export const EMBEDDING_MODEL_FILES = './models/Xenova/bge-small-en-v1.5/**/*';
+export const RERANK_MODEL_FILES = './models/Xenova/ms-marco-MiniLM-L-6-v2/**/*';

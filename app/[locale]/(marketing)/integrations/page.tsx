@@ -7,6 +7,11 @@ import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
 import { SIGNUP_HREF } from '@/components/marketing/content';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
+import { INTEGRATION_PAGES } from '@/lib/integration-pages';
+
+const PAGE_DESCRIPTION = 'Connect Crescelo to WhatsApp, Telegram, Slack, Google Sheets and webhooks, subscribe to bookings in your calendar app and use your own AI provider.';
 
 type Category = 'all' | 'calendar' | 'voice' | 'messaging' | 'ai' | 'crm';
 
@@ -206,16 +211,16 @@ const ALL_INTEGRATIONS: IntegrationDetail[] = [
   },
   {
     id: 'openai-gpt4o',
-    name: 'OpenAI (GPT-4o & o3)',
+    name: 'OpenAI (GPT models)',
     category: 'ai',
     categoryLabel: 'AI Providers (BYOK)',
     badge: 'BYOK',
     tone: 'amber',
     tagline: 'State-of-the-art multilingual conversation and reasoning.',
     overview:
-      'Bring your own OpenAI API key to power your assistant with GPT-4o, GPT-4o-mini, or o3-mini. Perfect for multi-lingual international clientele, complex constraint satisfaction, and nuanced service negotiation.',
+      'Bring your own OpenAI API key to power your assistant with GPT-5, GPT-5 mini or GPT-4o. Perfect for multi-lingual international clientele, complex constraint satisfaction, and nuanced service negotiation.',
     features: [
-      'Native support for GPT-4o and lightweight mini models',
+      'Support for the GPT-5 and GPT-4o families, including mini models',
       'Structured Outputs via JSON Schema enforcement',
       'BYOK model: zero platform token surcharges',
       'Automated fallback routing if rate limits occur',
@@ -237,9 +242,9 @@ const ALL_INTEGRATIONS: IntegrationDetail[] = [
     tone: 'lime',
     tagline: 'Massive context windows for comprehensive manuals and policy books.',
     overview:
-      'Leverage Google Gemini 2.5 Flash and Pro with up to 1M+ token context windows. Allows assistants to reason across entire product catalogs, medical protocols, and hundreds of pages of company SOPs with high fidelity.',
+      'Leverage Google Gemini 3 Flash and Gemini 2.5 Pro with very large context windows. Allows assistants to reason across entire product catalogs, medical protocols, and hundreds of pages of company SOPs with high fidelity.',
     features: [
-      'Gemini 2.5 Flash and Pro support',
+      'Gemini 3 Flash and 2.5 Pro support',
       'Massive context retrieval across extensive PDF collections',
       'Cost-effective high-token throughput',
       'Direct integration via Google Cloud AI platform or Gemini API',
@@ -260,9 +265,9 @@ const ALL_INTEGRATIONS: IntegrationDetail[] = [
     tone: 'lav',
     tagline: 'Empathetic tone of voice with steerable guidelines.',
     overview:
-      'Connect Claude 3.5 Sonnet or Haiku for articulate, human-like dialogue. Claude excels at adhering strictly to negative constraints, maintaining polite boundary enforcement, and avoiding hallucinations.',
+      'Connect Claude Sonnet 5.5 or Haiku 4.5 for articulate, human-like dialogue. Claude excels at adhering strictly to negative constraints, maintaining polite boundary enforcement, and avoiding hallucinations.',
     features: [
-      'Claude 3.5 Sonnet & Haiku 3.5 support',
+      'Claude Sonnet and Haiku support',
       'Strict constraint following and zero medical/legal drift',
       'Natural conversational cadence for customer support',
       'Wholesale BYOK pricing directly on your Anthropic console',
@@ -319,7 +324,7 @@ const ALL_INTEGRATIONS: IntegrationDetail[] = [
       'Interactive Slack Block Kit rich card formatting',
       'Configurable per-assistant channel routing via Incoming Webhooks',
       'Instant alerts for lead.created and appointment.created events',
-      'Sub-80ms notification delivery with automatic SSRF protection',
+      'Automatic protection against unsafe webhook addresses (SSRF)',
     ],
     latency: '60ms delivery latency',
     security: 'Validated Incoming Webhook endpoint with SSRF & private IP filtering',
@@ -408,16 +413,15 @@ export default function IntegrationsPage() {
 
   return (
     <>
+      <JsonLd data={[webPageSchema('Calendar, Messaging & AI Integrations', PAGE_DESCRIPTION, '/integrations', 'CollectionPage'), breadcrumbSchema([{ name: 'Integrations', path: '/integrations' }])]} />
       <Header />
       <main id="main">
         {/* Integrations Hero */}
         <section className="mk-hero" style={{ marginTop: '12px' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-              <T>INTEGRATIONS</T>
-            </p>
             <h1 className="mk-h1" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
+              <span className="mk-h1-kicker"><T>AI assistant integrations</T></span>{' '}
               <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
                 <T>Plugs into the</T> <span className="mk-echo-em"><T>tools</T></span> <T>you already run.</T>
               </span>
@@ -430,6 +434,22 @@ export default function IntegrationsPage() {
               <ButtonLink href="/support/contact" variant="ghost">
                 <T>Request an integration</T>
               </ButtonLink>
+            </div>
+          </div>
+        </section>
+
+        {/* One page per integration people search for: crawlable links, so each has its own address */}
+        <section className="mk-section" style={{ paddingBottom: '8px' }} aria-labelledby="integration-guides">
+          <div className="mk-wrap">
+            <SectionHead eyebrow="Set-up guides" title="Connect the tools you use." intro="Each guide says what the integration does, how to connect it, what plan it needs and what it does not do yet." id="integration-guides" align="center" />
+            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 15rem), 1fr))', marginTop: '2rem' }}>
+              {INTEGRATION_PAGES.map((i) => (
+                <Link key={i.slug} href={`/integrations/${i.slug}`} className="mk-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                  <h3>{i.name}</h3>
+                  <p>{i.seoDescription}</p>
+                  <span style={{ color: 'var(--mk-accent)', fontWeight: 700 }}><T>Read the guide →</T></span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>

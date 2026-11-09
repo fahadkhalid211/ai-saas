@@ -8,6 +8,8 @@ import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
 import { SIGNUP_HREF } from '@/components/marketing/content';
 import { JsonLd } from '@/components/marketing/JsonLd';
 import { breadcrumbSchema, softwareSchema, webPageSchema } from '@/lib/schema';
+import Link from '@/components/i18n/Link';
+import { PRODUCT_FEATURES } from '@/lib/product-features';
 
 interface ArchitectureStep {
   id: string;
@@ -159,10 +161,8 @@ export default function ProductPage() {
         <section className="mk-hero" style={{ marginTop: '12px' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-              <T>HOW IT WORKS UNDER THE HOOD</T>
-            </p>
             <h1 className="mk-h1" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
+              <span className="mk-h1-kicker"><T>AI website assistant features</T></span>{' '}
               <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
                 <T>Built to answer, book and</T> <span className="mk-echo-em"><T>never guess.</T></span>
               </span>
@@ -172,16 +172,32 @@ export default function ProductPage() {
             </p>
             <div className="mk-cta-row mk-rise" style={{ ['--mk-delay' as string]: '460ms' }}>
               <ButtonLink href={SIGNUP_HREF}><T>Start free trial</T></ButtonLink>
-              <ButtonLink href="/#playground" variant="ghost">
+              <ButtonLink href="/playground" variant="ghost">
                 <T>Try it live</T>
               </ButtonLink>
             </div>
             <ul className="mk-trust mk-rise" style={{ marginTop: '36px', ['--mk-delay' as string]: '600ms' }}>
-              <li><T>No hallucinations — answers from your content only</T></li>
+              <li><T>Answers from your content, and says when it does not know</T></li>
               <li><T>Zero token markup — your key, your rate</T></li>
-              <li><T>Real calendar slot locking — no double bookings</T></li>
+              <li><T>Slot locking, so two visitors cannot take the same time</T></li>
               <li><T>Human takeover in one click</T></li>
             </ul>
+          </div>
+        </section>
+
+        {/* The feature pages: one real page for each thing the assistant does */}
+        <section className="mk-section" aria-labelledby="feature-pages">
+          <div className="mk-wrap">
+            <SectionHead eyebrow="Features" title="Everything the assistant does, one page each." intro="Each page explains the feature, how to set it up, what you control and what it does not do yet." id="feature-pages" align="center" />
+            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 16rem), 1fr))', marginTop: '2rem' }}>
+              {PRODUCT_FEATURES.map((f) => (
+                <Link key={f.slug} href={`/product/${f.slug}`} className="mk-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                  <h3><T>{f.name}</T></h3>
+                  <p><T>{f.seoDescription}</T></p>
+                  <span style={{ color: 'var(--mk-accent)', fontWeight: 700 }}><T>Learn more →</T></span>
+                </Link>
+              ))}
+            </div>
           </div>
         </section>
 

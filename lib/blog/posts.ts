@@ -7,6 +7,7 @@
 import allGeneratedPosts from './data/all-posts.json';
 import { REWRITTEN_POSTS } from './rewritten';
 import { seoDescription, seoTitle, withFurtherReading } from './seo';
+import { topicFor } from './taxonomy';
 
 export type BlogBlock =
   | { type: 'p'; text: string }
@@ -209,8 +210,10 @@ const rawMap = new Map<string, BlogPost>();
 /** Search-result polish that must not depend on how a post was written: display-length title and description, a clean excerpt, cited sources. */
 export function polish(p: BlogPost): BlogPost {
   const description = seoDescription(p.description);
+  const topic = topicFor(p.slug, p.clusterId, p.clusterName);
   return {
     ...p,
+    ...(topic ? { clusterId: topic.id, clusterName: topic.name } : {}),
     seoTitle: seoTitle(p),
     description,
     excerpt: description,

@@ -62,14 +62,14 @@ export const NAV: NavLink[] = [
 /* ------------------------------ Hero ------------------------------ */
 
 export const HERO = {
-  eyebrow: 'Website assistant for service businesses',
+  eyebrow: 'AI website assistant for service businesses',
   title: ['Answer every visitor.', 'Book the ones who are ready.'],
   body: 'Instant answers from your content. Real bookings into your calendar.\nYour team steps in only when it matters.',
   primaryCta: 'Start free trial',
   secondaryCta: 'Try free Demo',
   trust: [
     'Answers from your own content, and says when it does not know',
-    'Free to start — zero compute cost',
+    'Free for 14 days: card required, cancel any time',
     'Human takeover in one click',
   ],
 };
@@ -304,7 +304,7 @@ export const FAQ = {
     },
     {
       q: 'Do I need my own AI provider account?',
-      a: 'No. You can get started right away using our free built-in engine with zero setup and no card required. If you prefer to connect your own OpenAI, Google Gemini, Anthropic or Groq account, you can plug in your existing key with zero platform markup.',
+      a: 'No. You can test right away on our free built-in engine, with no key and no setup. For your live assistant you connect your own OpenAI, Google Gemini, Anthropic or Groq account (or DeepSeek or a self-hosted model) by pasting its key, so your provider bills the usage directly at their rates and Crescelo adds no markup.',
     },
     {
       q: 'Can a person take over a live conversation?',
@@ -320,7 +320,7 @@ export const FAQ = {
     },
     {
       q: 'Which channels does it work on?',
-      a: 'An embeddable website widget, a hosted business page, WhatsApp and Telegram. One assistant, four channels.',
+      a: 'An embeddable website widget and a hosted business page on every plan, plus WhatsApp and Telegram on the Agency / Scale plan. One assistant, four channels.',
     },
     {
       q: 'Is Crescelo certified for HIPAA or SOC 2?',
@@ -349,38 +349,51 @@ export const FOOTER = {
       title: 'Product',
       links: [
         { label: 'Overview', href: '/product' },
-        { label: 'Custom AI Solutions', href: '/custom-ai' },
-        { label: 'Playground', href: '/playground' },
-        { label: 'LLM cost calculator', href: '/tools/llm-cost-calculator' },
-        { label: 'Architecture', href: '/product#pipeline-stages' },
-        { label: 'Roadmap', href: '/roadmap' },
+        { label: 'AI assistant', href: '/product/ai-assistant' },
+        { label: 'Appointment booking', href: '/product/appointment-booking' },
+        { label: 'Lead capture', href: '/product/lead-capture' },
+        { label: 'Knowledge base', href: '/product/knowledge-base' },
+        { label: 'Website chat widget', href: '/product/website-widget' },
+        { label: 'Human handover', href: '/product/human-handover' },
+        { label: 'WhatsApp & Telegram', href: '/product/messaging-channels' },
         { label: 'Integrations', href: '/integrations' },
         { label: 'Pricing', href: '/pricing' },
-        { label: 'Referral Program', href: '/referral' },
+        { label: 'Roadmap', href: '/roadmap' },
       ],
     },
     {
       title: 'Solutions',
       links: [
         { label: 'All Industries', href: '/use-case' },
-        { label: 'Salons & Spas', href: '/use-case#salons' },
-        { label: 'Clinics & Wellness', href: '/use-case#clinics' },
-        { label: 'Real Estate', href: '/use-case#real-estate' },
-        { label: 'Fitness & Gyms', href: '/use-case#fitness' },
-        { label: 'Contractors & Trades', href: '/use-case#trades' },
-        { label: 'SaaS & Startups', href: '/use-case#saas' },
+        { label: 'Salons & Barbershops', href: '/use-case/salons-barbershops' },
+        { label: 'Dental Clinics', href: '/use-case/dental-clinics' },
+        { label: 'Home Services', href: '/use-case/home-services' },
+        { label: 'Real Estate', href: '/use-case/real-estate' },
+        { label: 'Law Firms', href: '/use-case/law-firms' },
+        { label: 'Fitness Studios', href: '/use-case/fitness-studios' },
+        { label: 'Custom AI Solutions', href: '/custom-ai' },
       ],
     },
     {
-      title: 'Support',
+      title: 'Resources',
       links: [
-        { label: 'Blog', href: '/blog' },
+        { label: 'Knowledge Hub', href: '/blog' },
+        { label: 'Glossary', href: '/glossary' },
         { label: 'Help Center', href: '/support' },
+        { label: 'Playground', href: '/playground' },
+        { label: 'LLM cost calculator', href: '/tools/llm-cost-calculator' },
         { label: 'Add it to WordPress', href: '/guides/add-ai-assistant-to-wordpress' },
+        { label: 'Sign in', href: LOGIN_HREF },
+      ],
+    },
+    {
+      title: 'Company',
+      links: [
+        { label: 'About Crescelo', href: '/about' },
         { label: 'Contact Support', href: '/support/contact' },
+        { label: 'Affiliate Program', href: '/referral' },
         { label: 'Report a Bug', href: '/report-bug' },
         { label: 'System status', href: '/status' },
-        { label: 'Sign in', href: LOGIN_HREF },
       ],
     },
     {

@@ -28,14 +28,14 @@ export const itDict: TranslationDictionary = {
     globalDefault: 'Globale (Inglese)',
   },
   hero: {
-    eyebrow: 'Assistente web per imprese di servizi',
+    eyebrow: 'Assistente web con IA per imprese di servizi',
     title: ['Rispondi a ogni visitatore.', 'Prenota quelli che sono pronti.'],
     body: 'Risposte istantanee basate sui tuoi contenuti. Prenotazioni reali nel tuo calendario.\nIl tuo team interviene solo quando serve davvero.',
     primaryCta: 'Inizia la prova gratuita',
     secondaryCta: 'Prova la demo gratis',
     trust: [
       'Risponde esclusivamente dai tuoi contenuti – non inventa mai',
-      'Inizio gratuito – nessun costo di calcolo a tuo carico',
+      'Gratis per 14 giorni: serve una carta, annulli quando vuoi',
       'Intervento umano con un solo clic',
     ],
     turns: [
@@ -218,7 +218,7 @@ export const itDict: TranslationDictionary = {
       },
       {
         q: 'Ho bisogno di un account con un fornitore di AI a pagamento?',
-        a: 'No. Puoi iniziare immediatamente utilizzando il nostro motore integrato gratuito senza configurazioni complesse e senza carta. Se preferisci collegare il tuo account OpenAI, Google Gemini, Anthropic o Groq, puoi inserire la tua chiave senza commissioni aggiuntive.',
+        a: 'No. Puoi provare subito con il nostro motore integrato gratuito, senza chiave e senza configurazioni. Per il tuo assistente in produzione colleghi il tuo account OpenAI, Google Gemini, Anthropic o Groq (oppure DeepSeek o un modello ospitato da te) incollando la sua chiave, così il fornitore ti fattura l’uso direttamente alle sue tariffe e Crescelo non aggiunge alcun ricarico.',
       },
       {
         q: 'Un operatore umano può subentrare in una conversazione dal vivo?',

@@ -14,17 +14,9 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: '/status' },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-        'max-video-preview': -1,
-      },
-    },
+    // A live utility page: its numbers change by the minute and nobody searches for it, so it stays out of results.
+    // Links on it are still followed.
+    robots: { index: false, follow: true, googleBot: { index: false, follow: true } },
   },
   '/status'
 ));

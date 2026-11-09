@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ARTICLES_PER_DAY, FIRST_RELEASE, lastReleaseDate, releaseDate, releasedSlugs } from './schedule';
-import { isIndexable } from './indexing';
+import { CANONICAL_ELSEWHERE, isIndexable } from './indexing';
 import { NOT_CRAWLED_SLUGS } from './not-indexed';
 import { PUBLISHED_INDEX } from './index';
 
@@ -23,7 +23,7 @@ describe('article release schedule', () => {
   it('never releases a held-back article, and eventually releases all the others', () => {
     const all = releasedSlugs(day(10_000));
     expect(all.every(isIndexable)).toBe(true);
-    expect(all).toHaveLength(PUBLISHED_INDEX.filter((p) => isIndexable(p.slug)).length);
+    expect(all).toHaveLength(PUBLISHED_INDEX.filter((p) => isIndexable(p.slug) && !CANONICAL_ELSEWHERE[p.slug]).length);
   });
 
   it('keeps the articles already in the sitemap first, in the same order, then the ones Google has not crawled, then the rest', () => {

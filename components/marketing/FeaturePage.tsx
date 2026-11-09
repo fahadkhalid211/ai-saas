@@ -39,6 +39,11 @@ export function FeaturePage({ feature }: { feature: ProductFeature }) {
         <section className="mk-hero" style={{ marginTop: '1rem' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
+            <nav aria-label="Breadcrumb" className="mk-rise" style={{ ['--mk-delay' as string]: '0ms', fontSize: '0.86rem', marginBottom: '0.75rem', color: '#cfe3d6' }}>
+              <Link href="/product" style={{ color: 'inherit', textDecoration: 'underline' }}><T>Product</T></Link>
+              {' / '}
+              <span><T>{feature.name}</T></span>
+            </nav>
             <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}><T>{feature.eyebrow}</T></p>
             <h1 className="mk-h1 mk-rise" style={{ maxWidth: '22ch', marginInline: 'auto', ['--mk-delay' as string]: '140ms' }}>
               <T>{feature.title}</T>

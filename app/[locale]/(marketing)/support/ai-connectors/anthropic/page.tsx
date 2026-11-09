@@ -21,14 +21,14 @@ export async function generateMetadata(): Promise<Metadata> {
   alternates: { canonical: '/support/ai-connectors/anthropic' },
   title: 'Connect Anthropic Claude to Crescelo: API Key Guide',
   description:
-    'Complete step-by-step guide to create your Anthropic Console account, generate a Claude API key, and connect Claude 3.5 Sonnet or Haiku to Crescelo with zero markup.',
+    'Step-by-step guide to create an Anthropic Console account, generate a Claude API key and connect Claude Sonnet or Haiku to Crescelo with zero markup.',
 }, '/support/ai-connectors/anthropic'));
 }
 
 export default function AnthropicGuidePage() {
   return (
     <>
-      <JsonLd data={[webPageSchema('Connect Anthropic Claude to Crescelo: API Key Guide', 'Complete step-by-step guide to create your Anthropic Console account, generate a Claude API key, and connect Claude 3.5 Sonnet or Haiku to Crescelo with zero markup.', '/support/ai-connectors/anthropic'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }, { name: 'Anthropic Claude', path: '/support/ai-connectors/anthropic' }])]} />
+      <JsonLd data={[webPageSchema('Connect Anthropic Claude to Crescelo: API Key Guide', 'Step-by-step guide to create an Anthropic Console account, generate a Claude API key and connect Claude Sonnet or Haiku to Crescelo with zero markup.', '/support/ai-connectors/anthropic'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }, { name: 'Anthropic Claude', path: '/support/ai-connectors/anthropic' }])]} />
       <Header />
       <main id="main">
         {/* Breadcrumb & Hero */}

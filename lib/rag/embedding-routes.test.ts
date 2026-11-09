@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { EMBEDDING_ROUTES } from './embedding-routes';
+import { EMBEDDING_ROUTES, RERANK_ROUTES } from './embedding-routes';
 
 const ROOT = process.cwd();
 const EMBEDDER = path.join(ROOT, 'lib/rag/embedder.ts');
+const RETRIEVAL = path.join(ROOT, 'lib/rag/retrieval.ts');
 const EXTENSIONS = ['.ts', '.tsx', '/index.ts', '/index.tsx'];
 
 function resolveModule(spec: string, from: string): string | null {
@@ -32,14 +33,14 @@ function directImports(file: string): string[] {
   return resolved;
 }
 
-function reachesEmbedder(entry: string): boolean {
+function reaches(entry: string, target: string): boolean {
   const seen = new Set<string>();
   const stack = [entry];
   while (stack.length) {
     const file = stack.pop()!;
     if (seen.has(file)) continue;
     seen.add(file);
-    if (file === EMBEDDER) return true;
+    if (file === target) return true;
     stack.push(...directImports(file));
   }
   return false;
@@ -59,7 +60,8 @@ describe('routes that run the embedding model', () => {
     file,
     route: '/' + path.relative(path.join(ROOT, 'app'), path.dirname(file)).split(path.sep).join('/'),
   }));
-  const users = routes.filter((r) => reachesEmbedder(r.file)).map((r) => r.route);
+  const users = routes.filter((r) => reaches(r.file, EMBEDDER)).map((r) => r.route);
+  const searchers = routes.filter((r) => reaches(r.file, RETRIEVAL)).map((r) => r.route);
 
   it('finds the routes by reading the source', () => {
     expect(routes.length).toBeGreaterThan(50);
@@ -74,5 +76,11 @@ describe('routes that run the embedding model', () => {
   it('lists only routes that exist', () => {
     const known = new Set(routes.map((r) => r.route));
     expect(EMBEDDING_ROUTES.filter((r) => !known.has(r))).toEqual([]);
+  });
+
+  it('lists every route that searches the knowledge base, so it gets the re-ranking model', () => {
+    const missing = searchers.filter((r) => !RERANK_ROUTES.includes(r));
+    expect(missing, `add these to RERANK_ROUTES in lib/rag/embedding-routes.ts: ${missing.join(', ')}`).toEqual([]);
+    expect(RERANK_ROUTES.filter((r) => !EMBEDDING_ROUTES.includes(r))).toEqual([]);
   });
 });

@@ -23,14 +23,14 @@ export async function generateMetadata(): Promise<Metadata> {
   alternates: { canonical: '/support/ai-connectors/ollama' },
   title: 'Connect a Local Ollama Model to Crescelo',
   description:
-    'Complete guide to install Ollama, pull local open-source models (Llama 3.2, Mistral), configure CORS origins, and run 100% private offline inference on Crescelo.',
+    'Install Ollama, pull a local open-source model such as Llama or Mistral, configure CORS origins and run private offline inference with Crescelo.',
 }, '/support/ai-connectors/ollama'));
 }
 
 export default function OllamaGuidePage() {
   return (
     <>
-      <JsonLd data={[webPageSchema('Connect a Local Ollama Model to Crescelo', 'Complete guide to install Ollama, pull local open-source models (Llama 3.2, Mistral), configure CORS origins, and run 100% private offline inference on Crescelo.', '/support/ai-connectors/ollama'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }, { name: 'Local Ollama', path: '/support/ai-connectors/ollama' }])]} />
+      <JsonLd data={[webPageSchema('Connect a Local Ollama Model to Crescelo', 'Install Ollama, pull a local open-source model such as Llama or Mistral, configure CORS origins and run private offline inference with Crescelo.', '/support/ai-connectors/ollama'), breadcrumbSchema([{ name: 'Support', path: '/support' }, { name: 'AI connectors', path: '/support/ai-connectors' }, { name: 'Local Ollama', path: '/support/ai-connectors/ollama' }])]} />
       <Header />
       <main id="main">
         {/* Breadcrumb & Hero */}

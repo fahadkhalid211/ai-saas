@@ -75,3 +75,6 @@ public/linkedin/
 scripts/generate-solid-logos.mjs
 scripts/generate-c-logos.mjs
 scripts/generate-linkedin-covers.mjs
+
+# search models copied here before the build (scripts/fetch-models.mjs)
+/models/

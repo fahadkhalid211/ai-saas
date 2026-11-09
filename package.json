@@ -9,6 +9,7 @@
     "rag:migrate": "npx tsx scripts/rag-migrate.ts",
     "db:schema": "node scripts/apply-schema.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/fetch-models.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

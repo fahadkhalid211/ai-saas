@@ -57,7 +57,7 @@ export const CITY_NICHE_BATCH2_POSTS = [
       table(
         ["Intake Metric", "NYC Front Desk Staff", "Static Contact Form", "Crescelo Aesthetic Concierge"],
         ["Availability", "Clinic hours only (10:00 AM – 6:00 PM)", "24/7 (passive)", "24/7/365 Conversational AI"],
-        ["Speed to Lead", "3–10 minute wait; voicemail after hours", "12–24 hour response delay", "Sub-second instant response (< 1 sec)"],
+        ["Speed to Lead", "3–10 minute wait; voicemail after hours", "12–24 hour response delay", "Instant replies at any hour"],
         ["Contraindication Pre-Screening", "Frequently overlooked by busy staff", "Zero screening", "100% protocol-verified via RAG"],
         ["Social Media Bio Conversion", "Requires manual link tree navigation", "Low form completion (8% – 12%)", "High conversational completion (45% – 60%)"],
         ["Double-Booking Risk", "Moderate during peak clinic hours", "High with manual diary sync", "Zero (atomic mutex locking)"],
@@ -406,7 +406,7 @@ export const CITY_NICHE_BATCH2_POSTS = [
         ["Intake Dimension", "Miami Receptionist Staff", "Static Contact Form", "Crescelo Miami Aesthetic AI"],
         ["Availability", "Clinic hours only (9:00 AM – 6:00 PM)", "24/7 (passive)", "24/7/365 Conversational AI"],
         ["Bilingual Fluency", "Dependent on individual staff", "Static English form", "Fluent bilingual English & Spanish"],
-        ["Speed to Lead", "3–10 minute wait; voicemail after hours", "12–24 hour response delay", "Sub-second instant response (< 1 sec)"],
+        ["Speed to Lead", "3–10 minute wait; voicemail after hours", "12–24 hour response delay", "Instant replies at any hour"],
         ["Contraindication Pre-Screening", "Frequently overlooked during rushes", "Zero screening", "100% protocol-verified via RAG"],
         ["Double-Booking Risk", "Moderate during peak clinic hours", "High with manual diary sync", "Zero (atomic mutex locking)"],
         ["Monthly Software Cost", "$3,500 – $4,800 salary + benefits", "$50 form builder", "Affordable flat subscription"]
@@ -831,7 +831,7 @@ export const CITY_NICHE_BATCH2_POSTS = [
     tags: ['Dubai', 'Real Estate', 'WhatsApp Booking', 'Lead Qualification'],
     body: [
       p("In Dubai, the real estate market is an international economic juggernaut. With record-breaking transaction volumes in prime developments across Downtown Dubai, Palm Jumeirah, Dubai Marina, Dubai Hills Estate, and Business Bay, real estate brokerages compete fiercely for global investors, expatriate residents, and high-net-worth property buyers."),
-      p("However, real estate lead conversion in the United Arab Emirates operates under unique dynamics: over 90% of prospective buyers and investors initiate property inquiries through WhatsApp or mobile messaging. Furthermore, because Dubai property buyers originate from Europe, Asia, India, and the Americas, high-value inquiries arrive 24 hours a day across different time zones. When an investor in London or Singapore inquires at 2:00 AM UAE time regarding off-plan payment plans or rental yields, they expect immediate, comprehensive property data."),
+      p("However, real estate lead conversion in the United Arab Emirates operates under unique dynamics: many prospective buyers and investors start property enquiries through WhatsApp or mobile messaging. Furthermore, because Dubai property buyers originate from Europe, Asia, India, and the Americas, high-value inquiries arrive 24 hours a day across different time zones. When an investor in London or Singapore inquires at 2:00 AM UAE time regarding off-plan payment plans or rental yields, they expect immediate, comprehensive property data."),
       p("If an agency relies on delayed manual callbacks, the investor immediately inquires with competing brokerages on Property Finder or Bayut. By deploying [Crescelo](/product), Dubai real estate agencies can connect their verified developer brochures and agent calendars directly across their website and official WhatsApp Business channels, qualifying investor budgets and booking VIP viewings around the clock."),
       p("This operational guide explores how leading Dubai real estate brokerages use Crescelo to automate investor qualification, book property viewings, and close multi-million-dirham transactions."),
 
@@ -854,32 +854,32 @@ export const CITY_NICHE_BATCH2_POSTS = [
       h3("2. Strict RAG Grounding: Developer Master Plans & ROI Figures"),
       p("You upload your actual developer brochures (Emaar, Nakheel, Damac, Sobha), payment plan sheets, expected completion dates, and historical rental yield documents. Crescelo answers buyer questions strictly using your uploaded materials, explaining 80/20 payment plans or Golden Visa investment thresholds without hallucinating unverified promises (see [grounded RAG vs hallucinating custom GPTs](/blog/grounded-rag-vs-custom-gpts-business-security))."),
 
-      h3("3. Real-Time VIP Viewing Booking with Mutex Slot Locks"),
-      p("When a qualified buyer wants to tour a show villa or luxury penthouse, Crescelo displays open agent viewing windows. Crescelo's **atomic concurrency mutex lock** secures the selected viewing slot, preventing two clients from booking the same agent window simultaneously. Explore the technical details in our guide on [how to stop double bookings online](/blog/stop-double-bookings-online)."),
+      h3("3. VIP Viewing Booking with Slot Locking"),
+      p("When a qualified buyer wants to tour a show villa or luxury penthouse, Crescelo displays open agent viewing windows. Crescelo's slot locking holds the selected time while the visitor confirms, so two clients cannot book the same window through the chat. The built-in picker books against the viewing hours you set, not against each agent's own calendar; for per-agent booking, point the assistant at a Calendly or Cal.com page. Explore the technical details in our guide on [how to stop double bookings online](/blog/stop-double-bookings-online)."),
 
       h3("4. High-Net-Worth Investor Triage & Executive Handover"),
-      p("When an inquiry involves multi-unit bulk floor purchases, beachfront mansions, or commercial plots exceeding AED 15,000,000, immediate executive dialogue is required. Crescelo qualifies the investor's nationality, timeline, and financing status, then triggers an instant alert to your managing director's private WhatsApp, enabling rapid executive follow-up."),
+      p("When an inquiry involves multi-unit bulk floor purchases, beachfront mansions, or commercial plots exceeding AED 15,000,000, immediate executive dialogue is required. Crescelo asks the qualifying questions you set (such as timeline and financing status) and alerts your team by email or Slack, so a senior person can follow up quickly."),
 
-      h3("5. Multilingual Fluency Across English, Arabic, and Russian"),
-      p("Dubai's property investor demographic is profoundly cosmopolitan. Crescelo natively converses in English, Arabic, Russian, and French, ensuring international buyers receive culturally fluent, grammatically pristine property guidance."),
+      h3("5. Replies in the Visitor's Language"),
+      p("Dubai's property investor demographic is profoundly cosmopolitan. Crescelo replies in the language the visitor writes in, within what the AI model you connect supports. Test the languages you need, such as Arabic or Russian, in the playground before relying on them, and write your documents in those languages for the best answers."),
 
       h2("Operational Comparison: Manual Agent Chat vs. Crescelo AI"),
       p("Compare manual broker messaging with Crescelo's automated real estate concierge:"),
       table(
         ["Intake Dimension", "Manual Agent WhatsApp", "Static Web Form", "Crescelo Dubai Real Estate AI"],
         ["Availability", "Dependent on agent waking hours", "24/7 (passive)", "24/7/365 Real-Time Interactive"],
-        ["Speed to Lead", "30–90 minute delays common", "12–24 hour response delay", "Sub-second instant response (< 1 sec)"],
-        ["Project Data Accuracy", "Agents often forget payment plan revisions", "Static PDF downloads", "100% accurate from uploaded developer RAG docs"],
+        ["Speed to Lead", "30–90 minute delays common", "12–24 hour response delay", "Instant replies at any hour"],
+        ["Project Data Accuracy", "Agents often forget payment plan revisions", "Static PDF downloads", "Answers drawn from the documents you upload"],
         ["Investor Qualification", "Subjective and inconsistent", "Zero automated screening", "Structured budget, timeline & visa qualification"],
-        ["Double-Booking Risk", "Frequent calendar clash during viewings", "No calendar integration", "Zero (atomic database mutex locking)"],
-        ["Monthly Software Cost", "$3,500+ assistant salary", "$40 web plugin", "Predictable flat software subscription"]
+        ["Double-Booking Risk", "Frequent calendar clash during viewings", "No calendar integration", "Slot locking for bookings made in the chat"],
+        ["Monthly Software Cost", "A salary or agency fee", "$40 web plugin", "Predictable flat software subscription"]
       ),
 
       h2("Eliminating Property Viewing No-Shows"),
       p("When an agent drives through Dubai traffic to Palm Jumeirah only to find an investor forgot their viewing appointment, valuable sales hours are lost. Crescelo enforces attendance:"),
       ol(
         "**Instant Calendar Invites (`.ics`):** Buyers receive automated calendar files syncing directly to their smartphones upon booking.",
-        "**Viewing Location & Gate Pass Instructions:** Crescelo automatically communicates community security gate codes, valet parking directions, and meeting pin locations.",
+        "**Viewing Location Instructions:** Put directions, parking and access notes in your knowledge base and the assistant shares them when asked. Keep gate codes and other security details out of public content.",
         "**One-Click Rescheduling:** International buyers with shifting flight schedules can easily reschedule their viewing via their unique link, freeing up the agent's schedule. Review our proven framework in [how to eliminate service no-shows](/blog/eliminate-service-no-shows-playbook)."
       ),
 
@@ -891,12 +891,12 @@ export const CITY_NICHE_BATCH2_POSTS = [
         "**Official WhatsApp Business API:** Deliver instant conversational service and calendar booking straight within the UAE's primary messaging platform."
       ),
 
-      h2("Implementation: Getting Your Dubai Agency Live in 15 Minutes"),
+      h2("Implementation: Getting Your Dubai Agency Live"),
       p("Deploying Crescelo for your real estate brokerage requires four simple steps:"),
       ol(
         "**Upload Project Master Plans:** Upload your developer brochures, payment plans, and Golden Visa guidelines into the [Crescelo Playground](/playground) to test conversational responses.",
-        "**Link Agent Calendars:** Register at [Crescelo](/login?mode=register) and connect your Google Calendar or brokerage scheduling feeds.",
-        "**Connect Your WhatsApp Number:** Link your official WhatsApp Business account through Crescelo's messaging channels module.",
+        "**Set Viewing Times:** Register at [Crescelo](/login?mode=register), then set your viewing hours and slot length, or add your Calendly or Cal.com link. Bookings reach your calendar through a private calendar feed.",
+        "**Connect Your WhatsApp Number:** On the Agency / Scale plan, link your official WhatsApp Business account (set up through your own Meta developer app) in Crescelo's messaging channels.",
         "**Embed on Your Site:** Paste the lightweight snippet into your website header. Your 24/7 property concierge is active across web and WhatsApp."
       ),
       note("Test your Dubai property project brochures in the [Crescelo Playground](/playground) right now—no credit card required."),
@@ -982,7 +982,7 @@ export const CITY_NICHE_BATCH2_POSTS = [
       table(
         ["Intake Metric", "Singapore Clinic Reception", "Static Contact Form", "Crescelo Aesthetic Concierge"],
         ["Availability", "Clinic hours only (10:00 AM – 7:00 PM)", "24/7 (passive)", "24/7/365 Conversational AI"],
-        ["Speed to Lead", "3–10 minute wait; voicemail after hours", "12–24 hour response delay", "Sub-second instant response (< 1 sec)"],
+        ["Speed to Lead", "3–10 minute wait; voicemail after hours", "12–24 hour response delay", "Instant replies at any hour"],
         ["Contraindication Pre-Screening", "Frequently overlooked by busy staff", "Zero screening", "100% protocol-verified via RAG"],
         ["MOH Compliance Guardrails", "Staff may inadvertently make claims", "Static text", "Strictly grounded in approved docs only"],
         ["Double-Booking Risk", "Moderate during peak clinic hours", "High with manual diary sync", "Zero (atomic mutex locking)"],

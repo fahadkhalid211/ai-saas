@@ -216,7 +216,7 @@ export const PILLAR2 = [
 
       h2("What it costs"),
       table(["Item", "Typical pattern"], ["Platform subscription", "Monthly fee scaled by number of conversations, assistants and storage"], ["AI usage", "Small cost per conversation, either bundled or paid directly to your AI provider"], ["Setup", "Your time to gather content and test"], ["Extras", "Calendar sync, channels such as WhatsApp, extra assistants, team seats"]),
-      p("Crescelo's plans start at $49 a month for one assistant with 100 chat sessions, and Growth at $149 adds booking, calendar sync and white-label options. See the [pricing page](/pricing). The important comparison is against what missing an enquiry costs you; see the [ROI calculator guide](/blog/ai-website-assistant-roi-calculator)."),
+      p("Crescelo's plans start at $49 a month (monthly billing) for one assistant with 100 chat sessions, and Growth at $149 adds booking, calendar sync and white-label options. See the [pricing page](/pricing). The important comparison is against what missing an enquiry costs you; see the [ROI calculator guide](/blog/ai-website-assistant-roi-calculator)."),
 
       h2("Protecting your front desk team"),
       p("A common worry is that an AI receptionist replaces people. In practice it tends to remove the repetitive load that causes burnout, so staff spend their time on the conversations that need them. Front desks that are constantly interrupted make mistakes and lose patience. Our piece on [preventing front desk burnout with AI](/blog/prevent-front-desk-burnout-ai) explores this. Be open with your team about what the assistant will and will not do."),

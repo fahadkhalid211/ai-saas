@@ -8,6 +8,8 @@ import { JsonLd } from '@/components/marketing/JsonLd';
 import { SectionHead } from '@/components/marketing/ui';
 import { SITE } from '@/components/marketing/content';
 import { sortedCards, getClusterSummaries } from '@/lib/blog';
+import { BLOG_TOPICS } from '@/lib/blog/topics';
+import { OFF_TOPIC_CLUSTER_IDS } from '@/lib/blog/taxonomy';
 import type { BlogCard } from '@/lib/blog/card';
 import { blogSchema, breadcrumbSchema, itemListSchema, webPageSchema } from '@/lib/schema';
 import { withSocial } from '@/lib/seo';
@@ -44,7 +46,11 @@ function groupByTopic(posts: BlogCard[]) {
 export default async function BlogIndexPage() {
   const locale = await getLocale();
   const t = await getT();
-  const { posts, translated } = await postsForHub(sortedCards(), locale);
+  const fetched = await postsForHub(sortedCards(), locale);
+  const translated = fetched.translated;
+  // The articles about the product come first; the few about hiring and general business operations follow, so the first page of
+  // the hub reads as what the site is about.
+  const posts = [...fetched.posts.filter((p) => !OFF_TOPIC_CLUSTER_IDS.has(p.clusterId ?? -1)), ...fetched.posts.filter((p) => OFF_TOPIC_CLUSTER_IDS.has(p.clusterId ?? -1))];
   const clusters = getClusterSummaries();
   const topics = groupByTopic(posts);
   // The excerpt is the description (see polish() in lib/blog/posts.ts), so the browser gets it once.
@@ -73,6 +79,9 @@ export default async function BlogIndexPage() {
               align="center"
             />
             {locale !== 'en' && <GoogleTranslateFallback targetLocale={locale} />}
+            <p style={{ textAlign: 'center', margin: '0.5rem 0 1.5rem' }}>
+              <Link href="/glossary" style={{ textDecoration: 'underline', fontWeight: 700 }}><T>Look up a term in the glossary →</T></Link>
+            </p>
             <BlogGlossaryHub posts={hubCards} clusters={clusters} translated={translated} />
 
             <nav aria-labelledby="all-articles" style={{ marginTop: '4rem' }}>
@@ -82,7 +91,12 @@ export default async function BlogIndexPage() {
               {topics.map(([topic, list]) => (
                 <section key={topic} style={{ marginBottom: '2rem' }}>
                   <h3 style={{ fontWeight: 700, marginBottom: '0.5rem' }}>
-                    <T>{topic}</T> <span style={{ fontWeight: 400, color: 'var(--mk-muted)' }}>(<T>{list.length}</T>)</span>
+                    {BLOG_TOPICS.find((t) => t.name === topic) ? (
+                      <Link href={`/blog/topic/${BLOG_TOPICS.find((t) => t.name === topic)!.slug}`} style={{ textDecoration: 'underline' }}><T>{topic}</T></Link>
+                    ) : (
+                      <T>{topic}</T>
+                    )}{' '}
+                    <span style={{ fontWeight: 400, color: 'var(--mk-muted)' }}>(<T>{list.length}</T>)</span>
                   </h3>
                   <ul style={{ columns: '18rem', columnGap: '2rem', margin: 0, paddingLeft: '1.1rem', lineHeight: 1.7 }}>
                     {list.map((p) => (

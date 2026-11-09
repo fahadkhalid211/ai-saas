@@ -231,7 +231,7 @@ export default function RoadmapPage() {
             </h1>
             <p className="mk-lead mk-rise" style={{ maxWidth: '64ch', marginInline: 'auto', ['--mk-delay' as string]: '320ms' }}>
               <T>A plain list of what is available now, what needs setup on your side, what we are building and what is only planned.
-              Last reviewed September 2026.</T>
+              Last reviewed November 2026.</T>
             </p>
 
             <div
@@ -252,7 +252,7 @@ export default function RoadmapPage() {
               }}
             >
               <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }} />
-              <span><T>Feature status reviewed September 2026</T></span>
+              <span><T>Feature status reviewed November 2026</T></span>
               <span style={{ color: 'var(--mk-muted)' }}>•</span>
               <span style={{ color: 'var(--mk-muted)' }}><T>Zero Token Markup BYOK Architecture</T></span>
             </div>

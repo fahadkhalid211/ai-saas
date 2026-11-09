@@ -8,8 +8,8 @@ import { withSocial } from '@/lib/seo';
 import { breadcrumbSchema, faqSchema, webPageSchema } from '@/lib/schema';
 
 const PATH = '/tools/llm-cost-calculator';
-const title = 'LLM Cost Calculator: What an AI Chatbot Costs per Conversation';
-const description = 'Free calculator for AI chatbot API costs. Enter your chat volume and message length to compare the cost per conversation and per month across OpenAI, Claude, Gemini and Groq models.';
+const title = 'LLM Cost Calculator: AI Chatbot Cost per Conversation';
+const description = 'Free chatbot cost calculator: enter chat volume and message length to compare cost per conversation and per month across OpenAI, Claude, Gemini and Groq.';
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizeMeta(withSocial({ title, description, alternates: { canonical: PATH } }, PATH));

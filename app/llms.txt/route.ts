@@ -44,8 +44,11 @@ Full details: ${u}/pricing
 - [LLM cost calculator: API cost of a chatbot per conversation and per month](${u}/tools/llm-cost-calculator)
 - [AI website assistant](${u}/product/ai-assistant), [Appointment booking](${u}/product/appointment-booking), [Lead capture](${u}/product/lead-capture), [Knowledge base](${u}/product/knowledge-base), [Website chat widget](${u}/product/website-widget), [Human handover](${u}/product/human-handover), [WhatsApp and Telegram](${u}/product/messaging-channels)
 - [Pricing](${u}/pricing)
-- [Use cases by industry](${u}/use-case)
-- [Integrations](${u}/integrations)
+- [Use cases by industry](${u}/use-case): [salons and barbershops](${u}/use-case/salons-barbershops), [dental clinics](${u}/use-case/dental-clinics), [home services and contractors](${u}/use-case/home-services), [real estate](${u}/use-case/real-estate), [law firms and advisers](${u}/use-case/law-firms), [fitness studios](${u}/use-case/fitness-studios)
+- [Integrations](${u}/integrations): [WhatsApp](${u}/integrations/whatsapp), [Telegram](${u}/integrations/telegram), [Slack](${u}/integrations/slack), [Google Sheets](${u}/integrations/google-sheets), [webhooks, Zapier and Make](${u}/integrations/zapier-make)
+- [Glossary of AI website assistant terms](${u}/glossary)
+- [About Crescelo and how articles are written](${u}/about)
+- [Custom AI development services](${u}/custom-ai)
 - [Roadmap and feature status](${u}/roadmap): what is available, what needs setup, what is planned
 - [Help center](${u}/support)
 - [Add the assistant to WordPress](${u}/guides/add-ai-assistant-to-wordpress)

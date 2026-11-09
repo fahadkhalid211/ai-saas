@@ -37,7 +37,6 @@ export const viewport: Viewport = {
 
 const baseMetadata: Metadata = {
   metadataBase: new URL(SITE.url),
-  keywords: ['AI website assistant', 'AI chatbot for service businesses', 'appointment booking chatbot', 'lead capture chatbot', 'website chat widget', 'BYOK AI chatbot'],
   authors: [{ name: 'Crescelo', url: SITE.url }],
   // Search Console ownership: set GOOGLE_SITE_VERIFICATION (Google) and BING_SITE_VERIFICATION (Bing Webmaster Tools) to the tokens
   // they give you. Bing's index feeds ChatGPT search, Copilot and others, so it matters as much as Google for AI answers.

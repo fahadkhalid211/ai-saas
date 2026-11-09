@@ -22,10 +22,32 @@ import {
   Check,
   Building2,
 } from 'lucide-react';
+import type { Metadata } from 'next';
 import { verifyPartnerToken } from '@/lib/security/referral-auth';
+import { localizeMetaEnglishOnly } from '@/lib/i18n/metadata';
+import { withSocial } from '@/lib/seo';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
+import { BILLING_PLANS } from '@/lib/billing/plans';
 import { TwitterIcon, LinkedInIcon, YouTubeIcon, InstagramIcon } from '@/components/referral/SocialIcons';
 
 export const dynamic = 'force-dynamic';
+
+const title = 'Crescelo Affiliate Program: 10% Recurring Commission';
+const description = 'Earn 10% of every payment from each business you refer to Crescelo, for as long as they stay subscribed. 30-day attribution, payouts from $50.';
+
+export async function generateMetadata(): Promise<Metadata> {
+  return localizeMetaEnglishOnly(withSocial({ title, description, alternates: { canonical: '/referral' } }, '/referral'), { path: '/referral' });
+}
+
+/** The earnings examples are worked out from the real plan prices (monthly billing), so they cannot drift from the pricing page. */
+const PLAN_MONTHLY = Object.fromEntries(BILLING_PLANS.map((p) => [p.id, p.monthlyPrice])) as Record<string, number>;
+const COMMISSION_RATE = 0.1;
+const EXAMPLE_PLAN_PRICE = PLAN_MONTHLY.growth;
+const money = (n: number) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const moneyExact = (n: number) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+/** Commission per month for a number of clients, all on the Growth plan paid monthly. */
+const monthlyFor = (clients: number) => Math.round(clients * EXAMPLE_PLAN_PRICE * COMMISSION_RATE * 100) / 100;
 
 export default async function ReferralIndexPage() {
   const cookieStore = await cookies();
@@ -36,6 +58,7 @@ export default async function ReferralIndexPage() {
 
   return (
     <>
+      <JsonLd data={[webPageSchema('Crescelo Affiliate Program', description, '/referral'), breadcrumbSchema([{ name: 'Affiliate program', path: '/referral' }])]} />
       <Header />
       <main id="main" className="pt-2 pb-16">
         {/* Hero Section */}
@@ -87,7 +110,7 @@ export default async function ReferralIndexPage() {
               HOW IT WORKS
             </p>
             <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1a1a1a]">
-              Three steps from link to monthly passive revenue.
+              Three steps from link to monthly commission.
             </h2>
             <p className="text-sm sm:text-base text-[#55554c] leading-relaxed">
               No manual contracts or waiting weeks for review. Instant onboarding gives you your custom attribution slug immediately.
@@ -136,7 +159,7 @@ export default async function ReferralIndexPage() {
               </div>
               <h3 className="text-lg font-bold text-[#1a1a1a]">Collect 10% Every Single Month</h3>
               <p className="text-xs sm:text-sm text-[#55554c] leading-relaxed">
-                When a business subscribes to Starter ($49/mo), Growth ($129/mo), or Scale ($299/mo), you earn 10% each month. As long as they stay subscribed, you get paid.
+                When a business subscribes to Starter ({money(PLAN_MONTHLY.starter)}/mo), Growth ({money(PLAN_MONTHLY.growth)}/mo) or Scale ({money(PLAN_MONTHLY.scale)}/mo), you earn 10% each month. As long as they stay subscribed, you get paid.
               </p>
               <div className="pt-2">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-[#e6f9c8] border border-[#abff44] text-[11px] font-bold text-[#08251a]">
@@ -158,7 +181,7 @@ export default async function ReferralIndexPage() {
                 Compounding Recurring Revenue
               </h2>
               <p className="text-xs sm:text-sm text-[#55554c]">
-                Crescelo plans range from $49 to $299 per month. Unlike one-off affiliate deals, each client you refer adds to your predictable monthly cashflow:
+                Crescelo plans range from {money(PLAN_MONTHLY.starter)} to {money(PLAN_MONTHLY.scale)} per month (paid monthly). Unlike one-off affiliate deals, each client you refer keeps adding to your monthly commission while they stay subscribed:
               </p>
             </div>
 
@@ -169,13 +192,13 @@ export default async function ReferralIndexPage() {
                   10 Active Clients
                 </span>
                 <div className="text-3xl font-extrabold font-mono text-[#1a1a1a]">
-                  $129<span className="text-sm font-normal text-[#55554c]">/mo</span>
+                  {money(monthlyFor(10))}<span className="text-sm font-normal text-[#55554c]">/mo</span>
                 </div>
                 <div className="text-xs font-semibold text-[#0f6e58] bg-[#e8f5f2] py-1 px-3 rounded-full inline-block border border-[#0f6e58]/20">
-                  $1,548.00 / year recurring
+                  {moneyExact(monthlyFor(10) * 12)} / year
                 </div>
                 <p className="text-[11.5px] text-[#55554c] leading-relaxed">
-                  Based on 10 business clients on our popular Growth plan ($129/mo).
+                  Example: 10 clients, each on the Growth plan ({money(EXAMPLE_PLAN_PRICE)}/mo).
                 </p>
               </div>
 
@@ -188,13 +211,13 @@ export default async function ReferralIndexPage() {
                   50 Active Clients
                 </span>
                 <div className="text-3xl font-extrabold font-mono text-[#08251a]">
-                  $645<span className="text-sm font-normal text-[#08251a]/80">/mo</span>
+                  {money(monthlyFor(50))}<span className="text-sm font-normal text-[#08251a]/80">/mo</span>
                 </div>
                 <div className="text-xs font-bold text-[#08251a] bg-[#fffdf6] py-1 px-3 rounded-full inline-block border border-[#1a1a1a]">
-                  $7,740.00 / year recurring
+                  {moneyExact(monthlyFor(50) * 12)} / year
                 </div>
                 <p className="text-[11.5px] text-[#08251a]/90 leading-relaxed font-medium">
-                  A predictable, hands-off passive income stream deposited each month.
+                  Example: 50 clients, each on the Growth plan.
                 </p>
               </div>
 
@@ -204,16 +227,20 @@ export default async function ReferralIndexPage() {
                   200 Active Clients
                 </span>
                 <div className="text-3xl font-extrabold font-mono text-[#1a1a1a]">
-                  $2,580<span className="text-sm font-normal text-[#55554c]">/mo</span>
+                  {money(monthlyFor(200))}<span className="text-sm font-normal text-[#55554c]">/mo</span>
                 </div>
                 <div className="text-xs font-bold text-[#1a1a1a] bg-[#fffdf6] py-1 px-3 rounded-full inline-block border border-[#1a1a1a]">
-                  $30,960.00 / year recurring
+                  {moneyExact(monthlyFor(200) * 12)} / year
                 </div>
                 <p className="text-[11.5px] text-[#55554c] leading-relaxed">
-                  Full-time creator or digital agency recurring partnership income.
+                  Example: 200 clients, each on the Growth plan.
                 </p>
               </div>
             </div>
+
+            <p className="text-center text-[11.5px] text-[#55554c] max-w-2xl mx-auto leading-relaxed">
+              These are worked examples, not forecasts, and no earnings are guaranteed. They assume every client stays subscribed, pays monthly on the Growth plan, and that commission is paid on the payments Crescelo actually receives, after the 30-day clearance period. Most partners will have far fewer clients.
+            </p>
 
             <div className="text-center pt-2">
               <Link

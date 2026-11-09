@@ -1,0 +1,2661 @@
+{
+  "name": "crescelo-product-kb",
+  "ranAt": "2026-11-02T16:22:23.860Z",
+  "k": 5,
+  "answerable": {
+    "cases": 43,
+    "hitAtK": 0.9302325581395349,
+    "recallAtK": 0.9302325581395349,
+    "precisionAtK": 0.21860465116279074,
+    "mrr": 0.7790697674418605,
+    "ndcgAtK": 0.8134652308150235
+  },
+  "byType": {
+    "factual": {
+      "cases": 12,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "precisionAtK": 0.19999999999999998,
+      "mrr": 1,
+      "ndcgAtK": 1
+    },
+    "followup": {
+      "cases": 4,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "precisionAtK": 0.22499999999999998,
+      "mrr": 0.675,
+      "ndcgAtK": 0.7544456402014998
+    },
+    "multi": {
+      "cases": 4,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "precisionAtK": 0.4,
+      "mrr": 1,
+      "ndcgAtK": 0.9799301972870469
+    },
+    "numeric": {
+      "cases": 5,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "precisionAtK": 0.22000000000000003,
+      "mrr": 0.7666666666666666,
+      "ndcgAtK": 0.8261859507142916
+    },
+    "overview": {
+      "cases": 2,
+      "hitAtK": 0.5,
+      "recallAtK": 0.5,
+      "precisionAtK": 0.3,
+      "mrr": 0.5,
+      "ndcgAtK": 0.5
+    },
+    "paraphrase": {
+      "cases": 8,
+      "hitAtK": 0.875,
+      "recallAtK": 0.875,
+      "precisionAtK": 0.175,
+      "mrr": 0.5458333333333334,
+      "ndcgAtK": 0.6272228201007499
+    },
+    "synonym": {
+      "cases": 5,
+      "hitAtK": 0.8,
+      "recallAtK": 0.8,
+      "precisionAtK": 0.16,
+      "mrr": 0.52,
+      "ndcgAtK": 0.5785578521428745
+    },
+    "typo": {
+      "cases": 3,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "precisionAtK": 0.20000000000000004,
+      "mrr": 1,
+      "ndcgAtK": 1
+    }
+  },
+  "latency": {
+    "meanMs": 69.2518411764704,
+    "p50Ms": 65.57540000000154,
+    "p95Ms": 125.05559999999969
+  },
+  "abstain": {
+    "answerableCases": 43,
+    "unanswerableCases": 8,
+    "meanTopScoreAnswerable": 0.7244049191991125,
+    "meanTopScoreUnanswerable": 0.5347111280610571,
+    "separationAuc": 0.9447674418604651,
+    "best": {
+      "threshold": 0.6238,
+      "answeredRate": 0.8837209302325582,
+      "falseAnswerRate": 0.125,
+      "f1": 0.9268292682926831,
+      "youden": 0.7587209302325582
+    }
+  },
+  "failures": [
+    "p04",
+    "s01",
+    "o01"
+  ],
+  "cases": [
+    {
+      "id": "f01",
+      "query": "What does the Starter plan cost?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8821644625954206,
+      "latencyMs": 85.60819999999876,
+      "retrieved": [
+        {
+          "docId": "pricing",
+          "score": 1,
+          "preview": "### Starter The Starter plan costs $49 per month, or $39 per month when billed annually. I",
+          "vectorScore": 0.8821644625954206,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.6451,
+          "preview": "### Growth The Growth plan costs $149 per month, or $119 per month when billed annually. I",
+          "vectorScore": 0.6624018163427566,
+          "keywordMatch": false
+        },
+        {
+          "docId": "pricing",
+          "score": 0.5635,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.654179647743258,
+          "keywordMatch": false
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.5609,
+          "preview": "### Storage limits Each plan has a knowledge storage limit: 50 MB on Starter, 500 MB on Gr",
+          "vectorScore": 0.5271094711510594,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.5438,
+          "preview": "### Cost and privacy Calls are not recorded by default. The speech recognition and voice r",
+          "vectorScore": 0.5563260502146924,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f02",
+      "query": "Which AI providers can I connect?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7947611040384313,
+      "latencyMs": 48.229199999999764,
+      "retrieved": [
+        {
+          "docId": "byok",
+          "score": 0.9175,
+          "preview": "### Supported providers You can connect OpenAI, Anthropic Claude, Google Gemini, Groq, Dee",
+          "vectorScore": 0.7947611040384313,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.7008,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.6516236961679599,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.5517,
+          "preview": "### AI phone receptionist Callers to your business number can be answered by the assistant",
+          "vectorScore": 0.6292423496930521,
+          "keywordMatch": true
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.5241,
+          "preview": "### Go live checklist Add your opening hours and services, connect an AI key or use the fr",
+          "vectorScore": 0.5684887182442555,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.5163,
+          "preview": "### Choosing a model Each assistant has its own provider and model setting, so one busines",
+          "vectorScore": 0.6472048701434852,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f03",
+      "query": "How are my API keys stored?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7478575738800517,
+      "latencyMs": 61.359199999998964,
+      "retrieved": [
+        {
+          "docId": "byok",
+          "score": 0.9285,
+          "preview": "### Where your key is stored Provider API keys are encrypted at rest with AES-256-GCM and ",
+          "vectorScore": 0.7478575738800517,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.8585,
+          "preview": "### What is stored Conversations and leads are stored for the workspace that owns them. Pa",
+          "vectorScore": 0.6622662297053942,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.7839,
+          "preview": "### Encryption All traffic uses TLS. Provider API keys and other stored secrets are encryp",
+          "vectorScore": 0.6227144786287435,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.3629,
+          "preview": "### The free engine If you have no key yet, choose the Zero-Cost Free Engine. It sends eac",
+          "vectorScore": 0.543520890421699,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.3477,
+          "preview": "### Sign-in protection Accounts can turn on two-factor authentication with an authenticato",
+          "vectorScore": 0.5190236272489948,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "f04",
+      "query": "What file types can I upload to the knowledge base?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7096625473414037,
+      "latencyMs": 76.90909999999894,
+      "retrieved": [
+        {
+          "docId": "knowledge",
+          "score": 0.6037,
+          "preview": "### What you can add You can upload PDF, Word, plain text, CSV and JSON files, paste text ",
+          "vectorScore": 0.7096625473414037,
+          "keywordMatch": false
+        },
+        {
+          "docId": "analytics",
+          "score": 0.5939,
+          "preview": "### Unanswered questions inbox Whenever the assistant cannot answer, or the retrieved mate",
+          "vectorScore": 0.573962411691764,
+          "keywordMatch": false
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.5859,
+          "preview": "### Teach it Open Knowledge Base and add your own documents, pages and videos. Then open t",
+          "vectorScore": 0.6083490149011322,
+          "keywordMatch": false
+        },
+        {
+          "docId": "troubleshooting",
+          "score": 0.5194,
+          "preview": "### Troubleshooting: The assistant says it does not know This means the knowledge base doe",
+          "vectorScore": 0.566749468687724,
+          "keywordMatch": false
+        },
+        {
+          "docId": "byok",
+          "score": 0.494,
+          "preview": "### Supported providers You can connect OpenAI, Anthropic Claude, Google Gemini, Groq, Dee",
+          "vectorScore": 0.5104431010587851,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f05",
+      "query": "When do appointment reminders go out?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8239790631332564,
+      "latencyMs": 51.787899999999354,
+      "retrieved": [
+        {
+          "docId": "booking",
+          "score": 1,
+          "preview": "### Confirmations and reminders After a booking the visitor receives a confirmation email ",
+          "vectorScore": 0.8239790631332564,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.6434,
+          "preview": "### Appointment booking Visitors can book a time without leaving the chat. The assistant s",
+          "vectorScore": 0.6492975683976118,
+          "keywordMatch": false
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.5542,
+          "preview": "### Go live checklist Add your opening hours and services, connect an AI key or use the fr",
+          "vectorScore": 0.5193788400735989,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.4944,
+          "preview": "### Cancelling and rescheduling Every confirmation email contains a private manage link. T",
+          "vectorScore": 0.6125185504299752,
+          "keywordMatch": false
+        },
+        {
+          "docId": "booking",
+          "score": 0.4141,
+          "preview": "### Availability by plan Direct appointment booking with calendar sync is included from th",
+          "vectorScore": 0.6379458762816336,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "f06",
+      "query": "How do I add the widget to my website?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7783184521682687,
+      "latencyMs": 55.16399999999885,
+      "retrieved": [
+        {
+          "docId": "channels",
+          "score": 0.9175,
+          "preview": "### Website widget Add the assistant to any website with a single script tag. The widget s",
+          "vectorScore": 0.7783184521682687,
+          "keywordMatch": true
+        },
+        {
+          "docId": "troubleshooting",
+          "score": 0.6904,
+          "preview": "### The widget does not appear Make sure the script tag is on the page and the website's d",
+          "vectorScore": 0.6911757298277551,
+          "keywordMatch": false
+        },
+        {
+          "docId": "roadmap",
+          "score": 0.6709,
+          "preview": "### Roadmap: Coming soon Hosted landing pages, where every assistant gets a ready-made web",
+          "vectorScore": 0.5498251767658257,
+          "keywordMatch": false
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.6367,
+          "preview": "### Put it on your site Open Widget and Styling, choose a colour and position, and copy th",
+          "vectorScore": 0.7563703243438947,
+          "keywordMatch": false
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.5737,
+          "preview": "### What you can add You can upload PDF, Word, plain text, CSV and JSON files, paste text ",
+          "vectorScore": 0.5858037034902582,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "f07",
+      "query": "How do I verify a webhook really came from Crescelo?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7214279102334619,
+      "latencyMs": 69.10750000000007,
+      "retrieved": [
+        {
+          "docId": "channels",
+          "score": 0.846,
+          "preview": "### Notifications and data out New leads and bookings can be sent to a Slack channel, appe",
+          "vectorScore": 0.7214279102334619,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.4607,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.617494818156893,
+          "keywordMatch": true
+        },
+        {
+          "docId": "white-label",
+          "score": 0.4306,
+          "preview": "### White-label and agencies: Removing Crescelo branding On the Growth plan and above you ",
+          "vectorScore": 0.5453483503996791,
+          "keywordMatch": false
+        },
+        {
+          "docId": "byok",
+          "score": 0.3879,
+          "preview": "### Supported providers You can connect OpenAI, Anthropic Claude, Google Gemini, Groq, Dee",
+          "vectorScore": 0.4926290353585341,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.3629,
+          "preview": "### Where your key is stored Provider API keys are encrypted at rest with AES-256-GCM and ",
+          "vectorScore": 0.48315160139864566,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f08",
+      "query": "Does the phone assistant say it is an AI?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8065993474656545,
+      "latencyMs": 58.8130000000001,
+      "retrieved": [
+        {
+          "docId": "phone",
+          "score": 0.8625,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.8065993474656545,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.6594,
+          "preview": "### AI phone receptionist Callers to your business number can be answered by the assistant",
+          "vectorScore": 0.7726488150798841,
+          "keywordMatch": false
+        },
+        {
+          "docId": "phone",
+          "score": 0.5916,
+          "preview": "### Setting it up The phone number is a local number bought from the carrier and assigned ",
+          "vectorScore": 0.7193516546797664,
+          "keywordMatch": false
+        },
+        {
+          "docId": "phone",
+          "score": 0.5817,
+          "preview": "### Cost and privacy Calls are not recorded by default. The speech recognition and voice r",
+          "vectorScore": 0.7005146366530786,
+          "keywordMatch": true
+        },
+        {
+          "docId": "live-agent",
+          "score": 0.5689,
+          "preview": "### Live agent handover: When a person should take over Visitors can ask to talk to a live",
+          "vectorScore": 0.5663032807310919,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f09",
+      "query": "Does the platform support two-factor authentication?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7589926552785697,
+      "latencyMs": 67.58649999999943,
+      "retrieved": [
+        {
+          "docId": "security",
+          "score": 0.714,
+          "preview": "### Sign-in protection Accounts can turn on two-factor authentication with an authenticato",
+          "vectorScore": 0.7589926552785697,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.5432,
+          "preview": "### Supported providers You can connect OpenAI, Anthropic Claude, Google Gemini, Groq, Dee",
+          "vectorScore": 0.5749820601276305,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.4319,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.5457757208981282,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.3654,
+          "preview": "### Security and privacy: Roles and access Team members have a role: owner, admin, billing",
+          "vectorScore": 0.5097894511059502,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.3629,
+          "preview": "### The free engine If you have no key yet, choose the Zero-Cost Free Engine. It sends eac",
+          "vectorScore": 0.5585568447951197,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f10",
+      "query": "How long are operational logs kept?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6928304518431081,
+      "latencyMs": 51.79320000000007,
+      "retrieved": [
+        {
+          "docId": "security",
+          "score": 0.681,
+          "preview": "### What is stored Conversations and leads are stored for the workspace that owns them. Pa",
+          "vectorScore": 0.6928304518431081,
+          "keywordMatch": true
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.4167,
+          "preview": "### Keeping knowledge fresh Re-adding a web page replaces its old passages. Deleting a sou",
+          "vectorScore": 0.5684669995377902,
+          "keywordMatch": true
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.3879,
+          "preview": "### How documents are processed Each document is split into passages of about 1,800 charac",
+          "vectorScore": 0.5065794556600972,
+          "keywordMatch": true
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.3629,
+          "preview": "### Storage limits Each plan has a knowledge storage limit: 50 MB on Starter, 500 MB on Gr",
+          "vectorScore": 0.519631560882791,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.3409,
+          "preview": "### Audit trail Owners can open the audit trail to see logins, setting changes and plan up",
+          "vectorScore": 0.5584234746357944,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "f11",
+      "query": "What is the maximum call length for the phone assistant?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7382671494103555,
+      "latencyMs": 45.76050000000032,
+      "retrieved": [
+        {
+          "docId": "phone",
+          "score": 0.923,
+          "preview": "### Setting it up The phone number is a local number bought from the carrier and assigned ",
+          "vectorScore": 0.7382671494103555,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.6349,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.6334231610890309,
+          "keywordMatch": false
+        },
+        {
+          "docId": "phone",
+          "score": 0.624,
+          "preview": "### AI phone receptionist Callers to your business number can be answered by the assistant",
+          "vectorScore": 0.5965240020693424,
+          "keywordMatch": false
+        },
+        {
+          "docId": "phone",
+          "score": 0.5157,
+          "preview": "### Cost and privacy Calls are not recorded by default. The speech recognition and voice r",
+          "vectorScore": 0.6168822754382035,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.4759,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.6069753464462744,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f12",
+      "query": "Are hosted landing pages available?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6907927506487137,
+      "latencyMs": 45.58460000000014,
+      "retrieved": [
+        {
+          "docId": "roadmap",
+          "score": 0.912,
+          "preview": "### Roadmap: Coming soon Hosted landing pages, where every assistant gets a ready-made web",
+          "vectorScore": 0.6907927506487137,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.4717,
+          "preview": "### Supported providers You can connect OpenAI, Anthropic Claude, Google Gemini, Groq, Dee",
+          "vectorScore": 0.5257144733326365,
+          "keywordMatch": true
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.3879,
+          "preview": "### Keeping knowledge fresh Re-adding a web page replaces its old passages. Deleting a sou",
+          "vectorScore": 0.5238024026564767,
+          "keywordMatch": true
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.3629,
+          "preview": "### What you can add You can upload PDF, Word, plain text, CSV and JSON files, paste text ",
+          "vectorScore": 0.514005106955916,
+          "keywordMatch": true
+        },
+        {
+          "docId": "channels",
+          "score": 0.3409,
+          "preview": "### Website widget Add the assistant to any website with a single script tag. The widget s",
+          "vectorScore": 0.571190892475297,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "p01",
+      "query": "Can two customers end up booked at the same time?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6513078071412967,
+      "latencyMs": 76.5062999999991,
+      "retrieved": [
+        {
+          "docId": "booking",
+          "score": 0.6574,
+          "preview": "### How slots are calculated You set the days of the week you are open, the opening and cl",
+          "vectorScore": 0.6513078071412967,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.511,
+          "preview": "### Availability by plan Direct appointment booking with calendar sync is included from th",
+          "vectorScore": 0.6101429022036599,
+          "keywordMatch": true
+        },
+        {
+          "docId": "billing",
+          "score": 0.4508,
+          "preview": "### Extra chat sessions If you use more chat sessions than your plan includes, the extra s",
+          "vectorScore": 0.5921160096168329,
+          "keywordMatch": true
+        },
+        {
+          "docId": "live-agent",
+          "score": 0.4352,
+          "preview": "### Live agent handover: When a person should take over Visitors can ask to talk to a live",
+          "vectorScore": 0.564845345367227,
+          "keywordMatch": true
+        },
+        {
+          "docId": "white-label",
+          "score": 0.3943,
+          "preview": "### Serving several clients Agencies create a separate assistant for each client, each wit",
+          "vectorScore": 0.571488426922877,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p02",
+      "query": "What happens when someone wants to speak with a real person in the chat?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 3,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.3333333333333333,
+      "ndcg": 0.5,
+      "topScore": 0.6284147853905345,
+      "latencyMs": 71.45689999999922,
+      "retrieved": [
+        {
+          "docId": "live-agent",
+          "score": 0.5954,
+          "preview": "### Live agent handover: When a person should take over Visitors can ask to talk to a live",
+          "vectorScore": 0.6203920476123702,
+          "keywordMatch": true
+        },
+        {
+          "docId": "billing",
+          "score": 0.5306,
+          "preview": "### Extra chat sessions If you use more chat sessions than your plan includes, the extra s",
+          "vectorScore": 0.5538125742606109,
+          "keywordMatch": true
+        },
+        {
+          "docId": "live-agent",
+          "score": 0.4572,
+          "preview": "### What your team sees A request for a live agent marks the conversation as waiting for a",
+          "vectorScore": 0.6284147853905345,
+          "keywordMatch": false
+        },
+        {
+          "docId": "pricing",
+          "score": 0.4354,
+          "preview": "### What counts as a chat session One visitor conversation counts as one chat session, how",
+          "vectorScore": 0.5838039968604118,
+          "keywordMatch": false
+        },
+        {
+          "docId": "phone",
+          "score": 0.4038,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.5921451588373353,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "p03",
+      "query": "My assistant keeps saying it has no idea, how do I fix that?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6309297535714575,
+      "topScore": 0.755507233043221,
+      "latencyMs": 76.73229999999967,
+      "retrieved": [
+        {
+          "docId": "knowledge",
+          "score": 0.6315,
+          "preview": "### Adding knowledge to an assistant An assistant answers only from the material you give ",
+          "vectorScore": 0.621337212165182,
+          "keywordMatch": true
+        },
+        {
+          "docId": "troubleshooting",
+          "score": 0.5432,
+          "preview": "### Troubleshooting: The assistant says it does not know This means the knowledge base doe",
+          "vectorScore": 0.755507233043221,
+          "keywordMatch": false
+        },
+        {
+          "docId": "phone",
+          "score": 0.4319,
+          "preview": "### Setting it up The phone number is a local number bought from the carrier and assigned ",
+          "vectorScore": 0.6016524362830943,
+          "keywordMatch": false
+        },
+        {
+          "docId": "phone",
+          "score": 0.4069,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.6013871874522887,
+          "keywordMatch": false
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.3849,
+          "preview": "### Teach it Open Knowledge Base and add your own documents, pages and videos. Then open t",
+          "vectorScore": 0.5837625612226793,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "p04",
+      "query": "What if the customer cannot make their appointment any more?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6195526701287531,
+      "latencyMs": 131.9431999999997,
+      "retrieved": [
+        {
+          "docId": "live-agent",
+          "score": 0.5443,
+          "preview": "### Live agent handover: When a person should take over Visitors can ask to talk to a live",
+          "vectorScore": 0.5294402203064418,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.5345,
+          "preview": "### How slots are calculated You set the days of the week you are open, the opening and cl",
+          "vectorScore": 0.5341350515921163,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.5098,
+          "preview": "### Appointment booking Visitors can book a time without leaving the chat. The assistant s",
+          "vectorScore": 0.6195526701287531,
+          "keywordMatch": false
+        },
+        {
+          "docId": "billing",
+          "score": 0.4822,
+          "preview": "### Extra chat sessions If you use more chat sessions than your plan includes, the extra s",
+          "vectorScore": 0.5232045344930433,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.4179,
+          "preview": "### Using your own calendar tool Instead of the built-in booking form you can point the as",
+          "vectorScore": 0.48738937367150753,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p05",
+      "query": "Is there any way to use it without paying for AI tokens?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 3,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.3333333333333333,
+      "ndcg": 0.5,
+      "topScore": 0.7564171083883158,
+      "latencyMs": 71.0638999999992,
+      "retrieved": [
+        {
+          "docId": "byok",
+          "score": 0.5856,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.6870518111652062,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.5688,
+          "preview": "### Choosing a model Each assistant has its own provider and model setting, so one busines",
+          "vectorScore": 0.6105483400545044,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.505,
+          "preview": "### The free engine If you have no key yet, choose the Zero-Cost Free Engine. It sends eac",
+          "vectorScore": 0.7564171083883158,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.4744,
+          "preview": "### Supported providers You can connect OpenAI, Anthropic Claude, Google Gemini, Groq, Dee",
+          "vectorScore": 0.644431193181887,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.4493,
+          "preview": "### Cost and privacy Calls are not recorded by default. The speech recognition and voice r",
+          "vectorScore": 0.6494957498058032,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p06",
+      "query": "Can I take my plan away partway through the year?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 5,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.2,
+      "ndcg": 0.38685280723454163,
+      "topScore": 0.6543754934007043,
+      "latencyMs": 100.40869999999995,
+      "retrieved": [
+        {
+          "docId": "white-label",
+          "score": 0.4867,
+          "preview": "### White-label and agencies: Removing Crescelo branding On the Growth plan and above you ",
+          "vectorScore": 0.5415538926604946,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.4782,
+          "preview": "### Plans and pricing Crescelo has three plans. Prices are in US dollars and can be paid m",
+          "vectorScore": 0.5446417839394392,
+          "keywordMatch": false
+        },
+        {
+          "docId": "byok",
+          "score": 0.4533,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.5116530598952957,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.4406,
+          "preview": "### Availability by plan Direct appointment booking with calendar sync is included from th",
+          "vectorScore": 0.5480994957583513,
+          "keywordMatch": false
+        },
+        {
+          "docId": "billing",
+          "score": 0.4246,
+          "preview": "### Cancelling You can cancel at any time. The plan stays active until the end of the peri",
+          "vectorScore": 0.6543754934007043,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "p07",
+      "query": "How does the assistant avoid making up answers?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6131474728968296,
+      "latencyMs": 97.13500000000022,
+      "retrieved": [
+        {
+          "docId": "knowledge",
+          "score": 0.7195,
+          "preview": "### Adding knowledge to an assistant An assistant answers only from the material you give ",
+          "vectorScore": 0.6131474728968296,
+          "keywordMatch": true
+        },
+        {
+          "docId": "analytics",
+          "score": 0.6312,
+          "preview": "### Improving answers over time Check the unanswered inbox weekly. Adding a short answer f",
+          "vectorScore": 0.5947300751306508,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.5774,
+          "preview": "### Setting it up The phone number is a local number bought from the carrier and assigned ",
+          "vectorScore": 0.5509928019667554,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.5199,
+          "preview": "### AI phone receptionist Callers to your business number can be answered by the assistant",
+          "vectorScore": 0.5609860510297127,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.4504,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.5876382781891791,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "p08",
+      "query": "What does my team see when a visitor asks for a person?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7000807125568126,
+      "latencyMs": 125.05559999999969,
+      "retrieved": [
+        {
+          "docId": "live-agent",
+          "score": 0.8955,
+          "preview": "### What your team sees A request for a live agent marks the conversation as waiting for a",
+          "vectorScore": 0.7000807125568126,
+          "keywordMatch": true
+        },
+        {
+          "docId": "live-agent",
+          "score": 0.6752,
+          "preview": "### Live agent handover: When a person should take over Visitors can ask to talk to a live",
+          "vectorScore": 0.6113410595394463,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.4949,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.5812384819588664,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.4759,
+          "preview": "### Security and privacy: Roles and access Team members have a role: owner, admin, billing",
+          "vectorScore": 0.573728103002404,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.4729,
+          "preview": "### Audit trail Owners can open the audit trail to see logins, setting changes and plan up",
+          "vectorScore": 0.5305410920083053,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s01",
+      "query": "What are the fees for the middle tier?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 10,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0.1,
+      "ndcg": 0,
+      "topScore": 0.6267072064106077,
+      "latencyMs": 65.57540000000154,
+      "retrieved": [
+        {
+          "docId": "phone",
+          "score": 0.4613,
+          "preview": "### Cost and privacy Calls are not recorded by default. The speech recognition and voice r",
+          "vectorScore": 0.5179253216281515,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.45,
+          "preview": "### Starter The Starter plan costs $49 per month, or $39 per month when billed annually. I",
+          "vectorScore": 0.6267072064106077,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.4167,
+          "preview": "### Plans and pricing Crescelo has three plans. Prices are in US dollars and can be paid m",
+          "vectorScore": 0.5840770530846218,
+          "keywordMatch": true
+        },
+        {
+          "docId": "billing",
+          "score": 0.3629,
+          "preview": "### Extra chat sessions If you use more chat sessions than your plan includes, the extra s",
+          "vectorScore": 0.5127466398418739,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.3409,
+          "preview": "### The free engine If you have no key yet, choose the Zero-Cost Free Engine. It sends eac",
+          "vectorScore": 0.466399968400743,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s02",
+      "query": "Is it possible to rebrand the chat window as my own?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6309297535714575,
+      "topScore": 0.559343300458515,
+      "latencyMs": 45.08170000000064,
+      "retrieved": [
+        {
+          "docId": "byok",
+          "score": 0.5982,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.5155381305409767,
+          "keywordMatch": true
+        },
+        {
+          "docId": "white-label",
+          "score": 0.582,
+          "preview": "### White-label and agencies: Removing Crescelo branding On the Growth plan and above you ",
+          "vectorScore": 0.559343300458515,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.4869,
+          "preview": "### The free engine If you have no key yet, choose the Zero-Cost Free Engine. It sends eac",
+          "vectorScore": 0.500968286455797,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.4619,
+          "preview": "### Choosing a model Each assistant has its own provider and model setting, so one busines",
+          "vectorScore": 0.49703504192700887,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.4009,
+          "preview": "### Using your own calendar tool Instead of the built-in booking form you can point the as",
+          "vectorScore": 0.5278826616935728,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "s03",
+      "query": "Which messaging apps does it work with?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6263660082895872,
+      "latencyMs": 52.9393,
+      "retrieved": [
+        {
+          "docId": "channels",
+          "score": 0.45,
+          "preview": "### WhatsApp and Telegram Connect the WhatsApp Cloud API with your Meta access token and p",
+          "vectorScore": 0.6263660082895872,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.4443,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.5277663640085613,
+          "keywordMatch": false
+        },
+        {
+          "docId": "byok",
+          "score": 0.4167,
+          "preview": "### Supported providers You can connect OpenAI, Anthropic Claude, Google Gemini, Groq, Dee",
+          "vectorScore": 0.5438528990798391,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.3879,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.48741206462161496,
+          "keywordMatch": true
+        },
+        {
+          "docId": "channels",
+          "score": 0.3629,
+          "preview": "### Email Lead and booking notifications are sent by email. You can use the built-in sendi",
+          "vectorScore": 0.5563792847002189,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "s04",
+      "query": "How do I make it read my company brochures?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6309297535714575,
+      "topScore": 0.5828947270866504,
+      "latencyMs": 52.8823999999986,
+      "retrieved": [
+        {
+          "docId": "knowledge",
+          "score": 0.45,
+          "preview": "### How documents are processed Each document is split into passages of about 1,800 charac",
+          "vectorScore": 0.5287218499668958,
+          "keywordMatch": true
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.4179,
+          "preview": "### What you can add You can upload PDF, Word, plain text, CSV and JSON files, paste text ",
+          "vectorScore": 0.5828947270866504,
+          "keywordMatch": false
+        },
+        {
+          "docId": "booking",
+          "score": 0.4167,
+          "preview": "### Using your own calendar tool Instead of the built-in booking form you can point the as",
+          "vectorScore": 0.5073241015694464,
+          "keywordMatch": true
+        },
+        {
+          "docId": "troubleshooting",
+          "score": 0.3959,
+          "preview": "### Troubleshooting: The assistant says it does not know This means the knowledge base doe",
+          "vectorScore": 0.5635244257371138,
+          "keywordMatch": false
+        },
+        {
+          "docId": "channels",
+          "score": 0.3879,
+          "preview": "### Email Lead and booking notifications are sent by email. You can use the built-in sendi",
+          "vectorScore": 0.5052439333543097,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s05",
+      "query": "Can my receptionist line be answered by the bot after hours?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6309297535714575,
+      "topScore": 0.6760168131607348,
+      "latencyMs": 87.44499999999971,
+      "retrieved": [
+        {
+          "docId": "phone",
+          "score": 0.6642,
+          "preview": "### AI phone receptionist Callers to your business number can be answered by the assistant",
+          "vectorScore": 0.667972591860582,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.5417,
+          "preview": "### Setting it up The phone number is a local number bought from the carrier and assigned ",
+          "vectorScore": 0.6760168131607348,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.4429,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.6588992061473553,
+          "keywordMatch": true
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.3776,
+          "preview": "### Go live checklist Add your opening hours and services, connect an AI key or use the fr",
+          "vectorScore": 0.5932909495066585,
+          "keywordMatch": true
+        },
+        {
+          "docId": "live-agent",
+          "score": 0.3629,
+          "preview": "### Live agent handover: When a person should take over Visitors can ask to talk to a live",
+          "vectorScore": 0.5799270903355457,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "t01",
+      "query": "how much is the growht plan",
+      "type": "typo",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8119102283318694,
+      "latencyMs": 42.23250000000007,
+      "retrieved": [
+        {
+          "docId": "pricing",
+          "score": 0.057,
+          "preview": "### Growth The Growth plan costs $149 per month, or $119 per month when billed annually. I",
+          "vectorScore": 0.8119102283318694,
+          "keywordMatch": false
+        },
+        {
+          "docId": "byok",
+          "score": 0.0568,
+          "preview": "### The free engine If you have no key yet, choose the Zero-Cost Free Engine. It sends eac",
+          "vectorScore": 0.523086868102848,
+          "keywordMatch": true
+        },
+        {
+          "docId": "analytics",
+          "score": 0.0561,
+          "preview": "### Sentiment escalation On the Growth plan and above, the assistant watches for frustrate",
+          "vectorScore": 0.5452876993101442,
+          "keywordMatch": true
+        },
+        {
+          "docId": "white-label",
+          "score": 0.0544,
+          "preview": "### Serving several clients Agencies create a separate assistant for each client, each wit",
+          "vectorScore": 0.5233513321069377,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.0544,
+          "preview": "### Cost and privacy Calls are not recorded by default. The speech recognition and voice r",
+          "vectorScore": 0.5006777641742682,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "t02",
+      "query": "whatsap and telegram integraton",
+      "type": "typo",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7577508304155522,
+      "latencyMs": 39.479699999999866,
+      "retrieved": [
+        {
+          "docId": "channels",
+          "score": 0.8075,
+          "preview": "### WhatsApp and Telegram Connect the WhatsApp Cloud API with your Meta access token and p",
+          "vectorScore": 0.7577508304155522,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.6367,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.5517108290828696,
+          "keywordMatch": true
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.3879,
+          "preview": "### What you can add You can upload PDF, Word, plain text, CSV and JSON files, paste text ",
+          "vectorScore": 0.5162182449894969,
+          "keywordMatch": true
+        },
+        {
+          "docId": "channels",
+          "score": 0.3629,
+          "preview": "### Notifications and data out New leads and bookings can be sent to a Slack channel, appe",
+          "vectorScore": 0.5696777493691028,
+          "keywordMatch": false
+        },
+        {
+          "docId": "channels",
+          "score": 0.3409,
+          "preview": "### Website widget Add the assistant to any website with a single script tag. The widget s",
+          "vectorScore": 0.5634480749594964,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "t03",
+      "query": "appointmnt reminder emails",
+      "type": "typo",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7052697028926306,
+      "latencyMs": 29.18119999999908,
+      "retrieved": [
+        {
+          "docId": "booking",
+          "score": 0.6058,
+          "preview": "### Confirmations and reminders After a booking the visitor receives a confirmation email ",
+          "vectorScore": 0.7052697028926306,
+          "keywordMatch": true
+        },
+        {
+          "docId": "troubleshooting",
+          "score": 0.4599,
+          "preview": "### Emails are not arriving Check the spam folder, then open Channels and send a test emai",
+          "vectorScore": 0.5868691333231792,
+          "keywordMatch": false
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.4167,
+          "preview": "### Go live checklist Add your opening hours and services, connect an AI key or use the fr",
+          "vectorScore": 0.4998854897838654,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.3879,
+          "preview": "### Cancelling and rescheduling Every confirmation email contains a private manage link. T",
+          "vectorScore": 0.6370051396952409,
+          "keywordMatch": false
+        },
+        {
+          "docId": "roadmap",
+          "score": 0.3629,
+          "preview": "### Under consideration More voice languages, deeper CRM integrations and shared inboxes a",
+          "vectorScore": 0.6072500371293319,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "n01",
+      "query": "How much does an extra chat session cost on the Growth plan?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8472655967740355,
+      "latencyMs": 61.726699999999255,
+      "retrieved": [
+        {
+          "docId": "pricing",
+          "score": 0.0752,
+          "preview": "### Growth The Growth plan costs $149 per month, or $119 per month when billed annually. I",
+          "vectorScore": 0.8472655967740355,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0677,
+          "preview": "### Starter The Starter plan costs $49 per month, or $39 per month when billed annually. I",
+          "vectorScore": 0.7284312791738587,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.067,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.7246554419563344,
+          "keywordMatch": true
+        },
+        {
+          "docId": "billing",
+          "score": 0.0661,
+          "preview": "### Extra chat sessions If you use more chat sessions than your plan includes, the extra s",
+          "vectorScore": 0.7023942980185282,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.0609,
+          "preview": "### Availability by plan Direct appointment booking with calendar sync is included from th",
+          "vectorScore": 0.6331274230030405,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "n02",
+      "query": "How many chat sessions are included in Agency?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": 3,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.25,
+      "reciprocalRank": 0.3333333333333333,
+      "ndcg": 0.5,
+      "topScore": 0.7130883968657618,
+      "latencyMs": 56.1872000000003,
+      "retrieved": [
+        {
+          "docId": "pricing",
+          "score": 0.0663,
+          "preview": "### What counts as a chat session One visitor conversation counts as one chat session, how",
+          "vectorScore": 0.7130883968657618,
+          "keywordMatch": true
+        },
+        {
+          "docId": "white-label",
+          "score": 0.0656,
+          "preview": "### Serving several clients Agencies create a separate assistant for each client, each wit",
+          "vectorScore": 0.6943244786699653,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0654,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.6688376268982064,
+          "keywordMatch": true
+        },
+        {
+          "docId": "billing",
+          "score": 0.0641,
+          "preview": "### Extra chat sessions If you use more chat sessions than your plan includes, the extra s",
+          "vectorScore": 0.6660926167408067,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "n03",
+      "query": "How much knowledge storage do I get on Starter?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6309297535714575,
+      "topScore": 0.7842394997986054,
+      "latencyMs": 54.38850000000093,
+      "retrieved": [
+        {
+          "docId": "knowledge",
+          "score": 0.071,
+          "preview": "### Storage limits Each plan has a knowledge storage limit: 50 MB on Starter, 500 MB on Gr",
+          "vectorScore": 0.7842394997986054,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0671,
+          "preview": "### Starter The Starter plan costs $49 per month, or $39 per month when billed annually. I",
+          "vectorScore": 0.6966978559518506,
+          "keywordMatch": true
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.0588,
+          "preview": "### How documents are processed Each document is split into passages of about 1,800 charac",
+          "vectorScore": 0.5574829856181965,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.0579,
+          "preview": "### What is stored Conversations and leads are stored for the workspace that owns them. Pa",
+          "vectorScore": 0.5642363067833643,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0567,
+          "preview": "### Growth The Growth plan costs $149 per month, or $119 per month when billed annually. I",
+          "vectorScore": 0.5451226111959321,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "n04",
+      "query": "What is the annual price of the Agency plan per month?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7932484149786059,
+      "latencyMs": 49.353399999999965,
+      "retrieved": [
+        {
+          "docId": "pricing",
+          "score": 0.9945,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.7932484149786059,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.7943,
+          "preview": "### Growth The Growth plan costs $149 per month, or $119 per month when billed annually. I",
+          "vectorScore": 0.720987252105518,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.7571,
+          "preview": "### Plans and pricing Crescelo has three plans. Prices are in US dollars and can be paid m",
+          "vectorScore": 0.6831956452201102,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.7289,
+          "preview": "### Starter The Starter plan costs $49 per month, or $39 per month when billed annually. I",
+          "vectorScore": 0.7196800548703203,
+          "keywordMatch": true
+        },
+        {
+          "docId": "billing",
+          "score": 0.5057,
+          "preview": "### Cancelling You can cancel at any time. The plan stays active until the end of the peri",
+          "vectorScore": 0.5046243404348689,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "n05",
+      "query": "How many messages per minute can one visitor send?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.25,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8562921546217895,
+      "latencyMs": 67.79880000000048,
+      "retrieved": [
+        {
+          "docId": "troubleshooting",
+          "score": 0.0753,
+          "preview": "### Too many messages Each visitor can send up to 35 messages per minute. Beyond that, the",
+          "vectorScore": 0.8562921546217895,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0631,
+          "preview": "### What counts as a chat session One visitor conversation counts as one chat session, how",
+          "vectorScore": 0.6446120555035398,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.0599,
+          "preview": "### Confirmations and reminders After a booking the visitor receives a confirmation email ",
+          "vectorScore": 0.5994221387101658,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0556,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.5429129044545778,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "m01",
+      "query": "Which plan lets me remove your branding and how much is it?",
+      "type": "multi",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.4,
+      "reciprocalRank": 1,
+      "ndcg": 0.9197207891481876,
+      "topScore": 0.6616573704031148,
+      "latencyMs": 66.69740000000093,
+      "retrieved": [
+        {
+          "docId": "white-label",
+          "score": 0.0636,
+          "preview": "### White-label and agencies: Removing Crescelo branding On the Growth plan and above you ",
+          "vectorScore": 0.6616573704031148,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0621,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.6073414980664252,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0605,
+          "preview": "### Growth The Growth plan costs $149 per month, or $119 per month when billed annually. I",
+          "vectorScore": 0.5752920274056292,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0576,
+          "preview": "### Starter The Starter plan costs $49 per month, or $39 per month when billed annually. I",
+          "vectorScore": 0.5706566485319853,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.0568,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.5235252092431422,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "m02",
+      "query": "I run an agency with ten clients. Which plan and what does it cost?",
+      "type": "multi",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.4,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.729374437280126,
+      "latencyMs": 73.39719999999943,
+      "retrieved": [
+        {
+          "docId": "pricing",
+          "score": 0.7192,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.729374437280126,
+          "keywordMatch": true
+        },
+        {
+          "docId": "white-label",
+          "score": 0.6792,
+          "preview": "### Serving several clients Agencies create a separate assistant for each client, each wit",
+          "vectorScore": 0.7257990444019042,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.6556,
+          "preview": "### Growth The Growth plan costs $149 per month, or $119 per month when billed annually. I",
+          "vectorScore": 0.6602055908779282,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.5195,
+          "preview": "### Starter The Starter plan costs $49 per month, or $39 per month when billed annually. I",
+          "vectorScore": 0.6431949109538134,
+          "keywordMatch": false
+        },
+        {
+          "docId": "phone",
+          "score": 0.5187,
+          "preview": "### Cost and privacy Calls are not recorded by default. The speech recognition and voice r",
+          "vectorScore": 0.5854489461430697,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "m03",
+      "query": "Can I book appointments on the cheapest plan and how do reminders work?",
+      "type": "multi",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.4,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6881936738317214,
+      "latencyMs": 100.70290000000023,
+      "retrieved": [
+        {
+          "docId": "booking",
+          "score": 0.6975,
+          "preview": "### Availability by plan Direct appointment booking with calendar sync is included from th",
+          "vectorScore": 0.6586567030067542,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.5689,
+          "preview": "### Confirmations and reminders After a booking the visitor receives a confirmation email ",
+          "vectorScore": 0.6881936738317214,
+          "keywordMatch": false
+        },
+        {
+          "docId": "pricing",
+          "score": 0.4796,
+          "preview": "### Starter The Starter plan costs $49 per month, or $39 per month when billed annually. I",
+          "vectorScore": 0.5847718550116514,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.4692,
+          "preview": "### Growth The Growth plan costs $149 per month, or $119 per month when billed annually. I",
+          "vectorScore": 0.5412554758465123,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.4626,
+          "preview": "### Appointment booking Visitors can book a time without leaving the chat. The assistant s",
+          "vectorScore": 0.643526003877008,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "m04",
+      "query": "How do I connect my own AI key and where does it get stored?",
+      "type": "multi",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.4,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7212282620976468,
+      "latencyMs": 116.14829999999893,
+      "retrieved": [
+        {
+          "docId": "byok",
+          "score": 0.9212,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.693920581906993,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.7742,
+          "preview": "### Where your key is stored Provider API keys are encrypted at rest with AES-256-GCM and ",
+          "vectorScore": 0.7212282620976468,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.6104,
+          "preview": "### Supported providers You can connect OpenAI, Anthropic Claude, Google Gemini, Groq, Dee",
+          "vectorScore": 0.6548008079918528,
+          "keywordMatch": true
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.6074,
+          "preview": "### Go live checklist Add your opening hours and services, connect an AI key or use the fr",
+          "vectorScore": 0.6155966052999151,
+          "keywordMatch": false
+        },
+        {
+          "docId": "byok",
+          "score": 0.5988,
+          "preview": "### The free engine If you have no key yet, choose the Zero-Cost Free Engine. It sends eac",
+          "vectorScore": 0.6846385516314784,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u01",
+      "query": "and how many assistants does it include?",
+      "type": "followup",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.25,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7343195402786722,
+      "latencyMs": 90.48769999999968,
+      "retrieved": [
+        {
+          "docId": "pricing",
+          "score": 0.0687,
+          "preview": "### Growth The Growth plan costs $149 per month, or $119 per month when billed annually. I",
+          "vectorScore": 0.7343195402786722,
+          "keywordMatch": true
+        },
+        {
+          "docId": "white-label",
+          "score": 0.066,
+          "preview": "### Serving several clients Agencies create a separate assistant for each client, each wit",
+          "vectorScore": 0.6990014869336143,
+          "keywordMatch": true
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.0641,
+          "preview": "### Storage limits Each plan has a knowledge storage limit: 50 MB on Starter, 500 MB on Gr",
+          "vectorScore": 0.6825112053809589,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.0629,
+          "preview": "### Availability by plan Direct appointment booking with calendar sync is included from th",
+          "vectorScore": 0.6668826449848233,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u02",
+      "query": "what if I go over that limit?",
+      "type": "followup",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.25,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7622880756243513,
+      "latencyMs": 145.2448000000004,
+      "retrieved": [
+        {
+          "docId": "pricing",
+          "score": 0.0704,
+          "preview": "### Starter The Starter plan costs $49 per month, or $39 per month when billed annually. I",
+          "vectorScore": 0.7622880756243513,
+          "keywordMatch": true
+        },
+        {
+          "docId": "billing",
+          "score": 0.0689,
+          "preview": "### Extra chat sessions If you use more chat sessions than your plan includes, the extra s",
+          "vectorScore": 0.7272669550253638,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0647,
+          "preview": "### What counts as a chat session One visitor conversation counts as one chat session, how",
+          "vectorScore": 0.6958120522160409,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.0634,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.6519995598800155,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u03",
+      "query": "can callers interrupt it?",
+      "type": "followup",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6309297535714575,
+      "topScore": 0.7321996321505948,
+      "latencyMs": 58.424699999999575,
+      "retrieved": [
+        {
+          "docId": "phone",
+          "score": 0.8677,
+          "preview": "### AI phone receptionist Callers to your business number can be answered by the assistant",
+          "vectorScore": 0.711066723987946,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.78,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.7321996321505948,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.5059,
+          "preview": "### Setting it up The phone number is a local number bought from the carrier and assigned ",
+          "vectorScore": 0.6574951811611232,
+          "keywordMatch": false
+        },
+        {
+          "docId": "phone",
+          "score": 0.4979,
+          "preview": "### Cost and privacy Calls are not recorded by default. The speech recognition and voice r",
+          "vectorScore": 0.5886994302524867,
+          "keywordMatch": true
+        },
+        {
+          "docId": "billing",
+          "score": 0.4179,
+          "preview": "### Extra chat sessions If you use more chat sessions than your plan includes, the extra s",
+          "vectorScore": 0.5536270767356821,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u04",
+      "query": "does that work on WhatsApp too?",
+      "type": "followup",
+      "answerable": true,
+      "firstRelevantRank": 5,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.2,
+      "ndcg": 0.38685280723454163,
+      "topScore": 0.7837051322285045,
+      "latencyMs": 84.11229999999887,
+      "retrieved": [
+        {
+          "docId": "live-agent",
+          "score": 0.8609,
+          "preview": "### Live agent handover: When a person should take over Visitors can ask to talk to a live",
+          "vectorScore": 0.7837051322285045,
+          "keywordMatch": true
+        },
+        {
+          "docId": "live-agent",
+          "score": 0.7145,
+          "preview": "### What your team sees A request for a live agent marks the conversation as waiting for a",
+          "vectorScore": 0.7640891487811987,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.5358,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.6016980357723608,
+          "keywordMatch": false
+        },
+        {
+          "docId": "live-agent",
+          "score": 0.5098,
+          "preview": "### Handing back When the agent finishes, they end the takeover and the assistant resumes ",
+          "vectorScore": 0.7565091952500015,
+          "keywordMatch": false
+        },
+        {
+          "docId": "channels",
+          "score": 0.5019,
+          "preview": "### WhatsApp and Telegram Connect the WhatsApp Cloud API with your Meta access token and p",
+          "vectorScore": 0.6204480800120136,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "o01",
+      "query": "Give me an overview of everything the phone feature does",
+      "type": "overview",
+      "answerable": true,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.9,
+      "latencyMs": 66.74599999999919,
+      "retrieved": [
+        {
+          "docId": "pricing",
+          "score": 0.9,
+          "preview": "### Plans and pricing Crescelo has three plans. Prices are in US dollars and can be paid m"
+        },
+        {
+          "docId": "byok",
+          "score": 0.9,
+          "preview": "### Where your key is stored Provider API keys are encrypted at rest with AES-256-GCM and "
+        },
+        {
+          "docId": "booking",
+          "score": 0.9,
+          "preview": "### Appointment booking Visitors can book a time without leaving the chat. The assistant s"
+        },
+        {
+          "docId": "channels",
+          "score": 0.9,
+          "preview": "### Website widget Add the assistant to any website with a single script tag. The widget s"
+        },
+        {
+          "docId": "security",
+          "score": 0.9,
+          "preview": "### Security and privacy: Roles and access Team members have a role: owner, admin, billing"
+        }
+      ]
+    },
+    {
+      "id": "o02",
+      "query": "Summarise your security features",
+      "type": "overview",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.6,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.5715957705989912,
+      "latencyMs": 50.93449999999939,
+      "retrieved": [
+        {
+          "docId": "security",
+          "score": 0.6608,
+          "preview": "### Security and privacy: Roles and access Team members have a role: owner, admin, billing",
+          "vectorScore": 0.565436323118643,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.4429,
+          "preview": "### Encryption All traffic uses TLS. Provider API keys and other stored secrets are encryp",
+          "vectorScore": 0.5398419815729519,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.4179,
+          "preview": "### Sign-in protection Accounts can turn on two-factor authentication with an authenticato",
+          "vectorScore": 0.5336482495989512,
+          "keywordMatch": true
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.4167,
+          "preview": "### Go live checklist Add your opening hours and services, connect an AI key or use the fr",
+          "vectorScore": 0.5715957705989912,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.3409,
+          "preview": "### The free engine If you have no key yet, choose the Zero-Cost Free Engine. It sends eac",
+          "vectorScore": 0.5148643488972272,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "x01",
+      "query": "What is the weather in Karachi today?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.3977546528718666,
+      "latencyMs": 44.66740000000027,
+      "retrieved": [
+        {
+          "docId": "channels",
+          "score": 0.45,
+          "preview": "### WhatsApp and Telegram Connect the WhatsApp Cloud API with your Meta access token and p",
+          "vectorScore": 0.34712276492044686,
+          "keywordMatch": true
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.4167,
+          "preview": "### Go live checklist Add your opening hours and services, connect an AI key or use the fr",
+          "vectorScore": 0.3977546528718666,
+          "keywordMatch": false
+        },
+        {
+          "docId": "phone",
+          "score": 0.3879,
+          "preview": "### Setting it up The phone number is a local number bought from the carrier and assigned ",
+          "vectorScore": 0.39021968498873005,
+          "keywordMatch": false
+        },
+        {
+          "docId": "booking",
+          "score": 0.3629,
+          "preview": "### Confirmations and reminders After a booking the visitor receives a confirmation email ",
+          "vectorScore": 0.3895094757731176,
+          "keywordMatch": false
+        },
+        {
+          "docId": "booking",
+          "score": 0.3409,
+          "preview": "### Availability by plan Direct appointment booking with calendar sync is included from th",
+          "vectorScore": 0.37978529049351484,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "x02",
+      "query": "Do you offer a mobile app for iPhone?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.526076029122519,
+      "latencyMs": 62.871900000000096,
+      "retrieved": [
+        {
+          "docId": "phone",
+          "score": 0.5059,
+          "preview": "### How a call works The assistant greets the caller and always says that it is an AI assi",
+          "vectorScore": 0.49439191104952984,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.4717,
+          "preview": "### AI phone receptionist Callers to your business number can be answered by the assistant",
+          "vectorScore": 0.526076029122519,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.45,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.5241043937807446,
+          "keywordMatch": true
+        },
+        {
+          "docId": "channels",
+          "score": 0.3991,
+          "preview": "### WhatsApp and Telegram Connect the WhatsApp Cloud API with your Meta access token and p",
+          "vectorScore": 0.5052679845649963,
+          "keywordMatch": false
+        },
+        {
+          "docId": "booking",
+          "score": 0.3985,
+          "preview": "### Confirmations and reminders After a booking the visitor receives a confirmation email ",
+          "vectorScore": 0.5116033036063514,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "x03",
+      "query": "Who is the CEO of Crescelo?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6229192035612638,
+      "latencyMs": 47.99829999999929,
+      "retrieved": [
+        {
+          "docId": "white-label",
+          "score": 0.6092,
+          "preview": "### White-label and agencies: Removing Crescelo branding On the Growth plan and above you ",
+          "vectorScore": 0.6229192035612638,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.56,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.6029025323195476,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.4979,
+          "preview": "### Plans and pricing Crescelo has three plans. Prices are in US dollars and can be paid m",
+          "vectorScore": 0.6201241175387142,
+          "keywordMatch": true
+        },
+        {
+          "docId": "channels",
+          "score": 0.4314,
+          "preview": "### Notifications and data out New leads and bookings can be sent to a Slack channel, appe",
+          "vectorScore": 0.504531746868064,
+          "keywordMatch": false
+        },
+        {
+          "docId": "booking",
+          "score": 0.4141,
+          "preview": "### How slots are calculated You set the days of the week you are open, the opening and cl",
+          "vectorScore": 0.48454710167804954,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "x04",
+      "query": "Can you write me a poem about spring?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.4086798551483155,
+      "latencyMs": 72.69440000000031,
+      "retrieved": [
+        {
+          "docId": "getting-started",
+          "score": 0.45,
+          "preview": "### Getting started: Create your assistant Sign up, name your business and pick an industr",
+          "vectorScore": 0.4086798551483155,
+          "keywordMatch": false
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.4167,
+          "preview": "### Teach it Open Knowledge Base and add your own documents, pages and videos. Then open t",
+          "vectorScore": 0.40703017321003915,
+          "keywordMatch": false
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.3879,
+          "preview": "### What you can add You can upload PDF, Word, plain text, CSV and JSON files, paste text ",
+          "vectorScore": 0.4033462125947485,
+          "keywordMatch": false
+        },
+        {
+          "docId": "roadmap",
+          "score": 0.3629,
+          "preview": "### Under consideration More voice languages, deeper CRM integrations and shared inboxes a",
+          "vectorScore": 0.4028764915002476,
+          "keywordMatch": false
+        },
+        {
+          "docId": "troubleshooting",
+          "score": 0.3409,
+          "preview": "### Too many messages Each visitor can send up to 35 messages per minute. Beyond that, the",
+          "vectorScore": 0.4026398016987953,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "x05",
+      "query": "Do you integrate with Salesforce natively?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.5619924509802648,
+      "latencyMs": 68.26449999999932,
+      "retrieved": [
+        {
+          "docId": "byok",
+          "score": 0.45,
+          "preview": "### Supported providers You can connect OpenAI, Anthropic Claude, Google Gemini, Groq, Dee",
+          "vectorScore": 0.5396845687588809,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.4167,
+          "preview": "### The free engine If you have no key yet, choose the Zero-Cost Free Engine. It sends eac",
+          "vectorScore": 0.4989406961042898,
+          "keywordMatch": true
+        },
+        {
+          "docId": "channels",
+          "score": 0.3879,
+          "preview": "### WhatsApp and Telegram Connect the WhatsApp Cloud API with your Meta access token and p",
+          "vectorScore": 0.500092762901037,
+          "keywordMatch": true
+        },
+        {
+          "docId": "getting-started",
+          "score": 0.3629,
+          "preview": "### Getting started: Create your assistant Sign up, name your business and pick an industr",
+          "vectorScore": 0.5619924509802648,
+          "keywordMatch": false
+        },
+        {
+          "docId": "roadmap",
+          "score": 0.3409,
+          "preview": "### Under consideration More voice languages, deeper CRM integrations and shared inboxes a",
+          "vectorScore": 0.5599301549620174,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "x06",
+      "query": "What is your refund policy for the annual plan after 90 days?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6795546945985615,
+      "latencyMs": 63.51770000000033,
+      "retrieved": [
+        {
+          "docId": "billing",
+          "score": 0.6574,
+          "preview": "### Cancelling You can cancel at any time. The plan stays active until the end of the peri",
+          "vectorScore": 0.6795546945985615,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.617,
+          "preview": "### Plans and pricing Crescelo has three plans. Prices are in US dollars and can be paid m",
+          "vectorScore": 0.5317331814860413,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.5372,
+          "preview": "### Growth The Growth plan costs $149 per month, or $119 per month when billed annually. I",
+          "vectorScore": 0.5295123848312323,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.5122,
+          "preview": "### Agency / Scale The Agency plan, also called Scale, costs $399 per month, or $319 per m",
+          "vectorScore": 0.5218880218277633,
+          "keywordMatch": true
+        },
+        {
+          "docId": "pricing",
+          "score": 0.4902,
+          "preview": "### Starter The Starter plan costs $49 per month, or $39 per month when billed annually. I",
+          "vectorScore": 0.4929041893403482,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "x07",
+      "query": "How many employees does the company have?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.51413527356609,
+      "latencyMs": 87.8044000000009,
+      "retrieved": [
+        {
+          "docId": "security",
+          "score": 0.0558,
+          "preview": "### Security and privacy: Roles and access Team members have a role: owner, admin, billing",
+          "vectorScore": 0.51413527356609,
+          "keywordMatch": true
+        },
+        {
+          "docId": "security",
+          "score": 0.0525,
+          "preview": "### What is stored Conversations and leads are stored for the workspace that owns them. Pa",
+          "vectorScore": 0.4700429241005209,
+          "keywordMatch": true
+        },
+        {
+          "docId": "knowledge",
+          "score": 0.0522,
+          "preview": "### How documents are processed Each document is split into passages of about 1,800 charac",
+          "vectorScore": 0.44270527136745996,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.0501,
+          "preview": "### AI phone receptionist Callers to your business number can be answered by the assistant",
+          "vectorScore": 0.4404186653528239,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "x08",
+      "query": "Is there an on-premise installation option?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.5665768646395757,
+      "latencyMs": 58.85290000000168,
+      "retrieved": [
+        {
+          "docId": "byok",
+          "score": 0.45,
+          "preview": "### Supported providers You can connect OpenAI, Anthropic Claude, Google Gemini, Groq, Dee",
+          "vectorScore": 0.5665768646395757,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.4167,
+          "preview": "### The free engine If you have no key yet, choose the Zero-Cost Free Engine. It sends eac",
+          "vectorScore": 0.5586516007242367,
+          "keywordMatch": true
+        },
+        {
+          "docId": "byok",
+          "score": 0.3879,
+          "preview": "### Bring your own AI key Crescelo does not add a markup to AI usage. You connect your own",
+          "vectorScore": 0.4957899992945698,
+          "keywordMatch": true
+        },
+        {
+          "docId": "phone",
+          "score": 0.3629,
+          "preview": "### Cost and privacy Calls are not recorded by default. The speech recognition and voice r",
+          "vectorScore": 0.49242499972329257,
+          "keywordMatch": true
+        },
+        {
+          "docId": "booking",
+          "score": 0.3409,
+          "preview": "### Availability by plan Direct appointment booking with calendar sync is included from th",
+          "vectorScore": 0.5391169996824825,
+          "keywordMatch": false
+        }
+      ]
+    }
+  ]
+}

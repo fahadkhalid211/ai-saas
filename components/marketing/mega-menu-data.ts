@@ -113,23 +113,23 @@ export const MEGA_MENUS: MegaMenu[] = [
       {
         title: 'Care & Appointments',
         links: [
-          { label: 'Salons & Barbershops', description: 'Fill chairs while hands are busy', href: '/use-case#salons', icon: Scissors, tone: 'lime' },
-          { label: 'Clinics & Dental', description: 'Handle patient intake and triage', href: '/use-case#clinics', icon: Stethoscope, tone: 'mint' },
-          { label: 'Fitness & Gyms', description: 'Trial classes, passes & coach slots', href: '/use-case#fitness', icon: Dumbbell, tone: 'lav' },
+          { label: 'Salons & Barbershops', description: 'Fill chairs while hands are busy', href: '/use-case/salons-barbershops', icon: Scissors, tone: 'lime' },
+          { label: 'Clinics & Dental', description: 'Handle patient intake and triage', href: '/use-case/dental-clinics', icon: Stethoscope, tone: 'mint' },
+          { label: 'Fitness & Gyms', description: 'Trial classes, passes & coach slots', href: '/use-case/fitness-studios', icon: Dumbbell, tone: 'lav' },
         ],
       },
       {
         title: 'Commerce & Property',
         links: [
           { label: 'E-Commerce & Retail', description: 'Product advice & pre-purchase cart', href: '/use-case#ecommerce', icon: ShoppingBag, tone: 'pink' },
-          { label: 'Real Estate & Property', description: 'Qualify buyers and book showings', href: '/use-case#real-estate', icon: Building2, tone: 'amber' },
-          { label: 'Contractors & Trades', description: 'Emergency repairs & job estimates', href: '/use-case#trades', icon: Wrench, tone: 'coral' },
+          { label: 'Real Estate & Property', description: 'Qualify buyers and book showings', href: '/use-case/real-estate', icon: Building2, tone: 'amber' },
+          { label: 'Contractors & Trades', description: 'Emergency repairs & job estimates', href: '/use-case/home-services', icon: Wrench, tone: 'coral' },
         ],
       },
       {
         title: 'Advisory, Dining & Tech',
         links: [
-          { label: 'Legal & Advisory', description: 'Screen retainers & paid consults', href: '/use-case#legal', icon: Scale, tone: 'lav' },
+          { label: 'Legal & Advisory', description: 'Screen retainers & paid consults', href: '/use-case/law-firms', icon: Scale, tone: 'lav' },
           { label: 'Restaurants & Dining', description: 'Table reservations & allergen menus', href: '/use-case#restaurants', icon: Utensils, tone: 'mint' },
           { label: 'SaaS & Tech Startups', description: 'Answer API docs and book demos', href: '/use-case#saas', icon: Briefcase, tone: 'lime' },
         ],

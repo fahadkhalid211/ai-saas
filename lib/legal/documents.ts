@@ -461,7 +461,7 @@ export const DPA: LegalDocument = {
   slug: 'dpa',
   title: 'Data Processing Addendum',
   eyebrow: 'Legal',
-  summary: 'How Crescelo processes personal data on behalf of customers. It forms part of the Terms of Service and applies automatically when a customer uses Crescelo to process personal data.',
+  summary: 'How Crescelo processes personal data for customers. It is part of the Terms of Service and applies when a customer uses Crescelo to process personal data.',
   sections: [
     {
       id: 'scope',

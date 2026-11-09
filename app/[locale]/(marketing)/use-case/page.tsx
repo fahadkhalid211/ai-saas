@@ -6,6 +6,12 @@ import { Header } from '@/components/marketing/Header';
 import { Footer } from '@/components/marketing/Closing';
 import { ButtonLink, Reveal, SectionHead } from '@/components/marketing/ui';
 import { SIGNUP_HREF } from '@/components/marketing/content';
+import Link from '@/components/i18n/Link';
+import { JsonLd } from '@/components/marketing/JsonLd';
+import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
+import { INDUSTRIES as INDUSTRY_PAGES } from '@/lib/industries';
+
+const PAGE_DESCRIPTION = 'How salons, clinics, estate agents, gyms, law firms and trades use a Crescelo assistant to answer visitors, book appointments and capture leads.';
 
 interface IndustrySimulation {
   id: string;
@@ -47,7 +53,7 @@ const INDUSTRIES: IndustrySimulation[] = [
     features: [
       'In-chat booking',
       'Calendly or Cal.com links for each stylist',
-      'Atomic mutex lock prevents chair double-booking',
+      'Slot locking so two clients cannot book the same time',
       'Self-service reschedule & cancellation links',
     ],
     chat: {
@@ -333,16 +339,25 @@ export default function UseCasePage() {
 
   return (
     <>
+      <JsonLd
+        data={[
+          webPageSchema('AI Assistants for Service Industries', PAGE_DESCRIPTION, '/use-case', 'CollectionPage'),
+          breadcrumbSchema([{ name: 'Who it is for', path: '/use-case' }]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            itemListElement: INDUSTRY_PAGES.map((i, n) => ({ '@type': 'ListItem', position: n + 1, name: i.name, url: `https://www.crescelo.com/use-case/${i.slug}` })),
+          },
+        ]}
+      />
       <Header />
       <main id="main">
         {/* Solutions Hero */}
         <section className="mk-hero" style={{ marginTop: '12px' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-              <T>BUILT FOR YOUR BUSINESS</T>
-            </p>
             <h1 className="mk-h1" style={{ maxWidth: '22ch', marginInline: 'auto' }}>
+              <span className="mk-h1-kicker"><T>AI chatbot for every service industry</T></span>{' '}
               <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
                 <T>Your industry. Your rules.</T> <span className="mk-echo-em"><T>Your assistant.</T></span>
               </span>
@@ -355,6 +370,22 @@ export default function UseCasePage() {
               <ButtonLink href="/pricing" variant="ghost">
                 <T>Compare plans</T>
               </ButtonLink>
+            </div>
+          </div>
+        </section>
+
+        {/* One real page per industry: crawlable links, and the way to a page that answers "AI chatbot for dental clinics" */}
+        <section className="mk-section" aria-labelledby="industry-pages">
+          <div className="mk-wrap">
+            <SectionHead eyebrow="Industry guides" title="Find the page for your kind of business." intro="Each guide covers what to put in the knowledge base, what the assistant does for that industry and what it does not do yet." id="industry-pages" align="center" />
+            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 17rem), 1fr))', marginTop: '2rem' }}>
+              {INDUSTRY_PAGES.map((i) => (
+                <Link key={i.slug} href={`/use-case/${i.slug}`} className="mk-card" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                  <h3>{i.name}</h3>
+                  <p>{i.seoDescription}</p>
+                  <span style={{ color: 'var(--mk-accent)', fontWeight: 700 }}><T>Read the guide →</T></span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>

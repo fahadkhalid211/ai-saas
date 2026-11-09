@@ -143,10 +143,8 @@ export function Hero() {
     <section className="mk-hero" aria-labelledby="mk-hero-title">
       <div className="mk-hero-glow" aria-hidden="true" />
       <div className="mk-wrap mk-hero-inner">
-        <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-          <T>{hero.eyebrow}</T>
-        </p>
         <h1 id="mk-hero-title" className="mk-h1">
+          <span className="mk-h1-kicker"><T>{hero.eyebrow}</T></span>{' '}
           <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
             <T>{hero.title[0]}</T>
           </span>

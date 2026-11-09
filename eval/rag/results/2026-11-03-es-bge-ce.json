@@ -1,0 +1,4033 @@
+{
+  "name": "clinica-dental-es",
+  "ranAt": "2026-11-02T20:34:47.309Z",
+  "k": 5,
+  "answerable": {
+    "cases": 62,
+    "hitAtK": 0.9354838709677419,
+    "recallAtK": 0.9354838709677419,
+    "precisionAtK": 0.19999999999999987,
+    "mrr": 0.8365591397849461,
+    "ndcgAtK": 0.8623443764723295
+  },
+  "byType": {
+    "factual": {
+      "cases": 20,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "precisionAtK": 0.20000000000000004,
+      "mrr": 0.96,
+      "ndcgAtK": 0.969342640361727
+    },
+    "followup": {
+      "cases": 4,
+      "hitAtK": 0.75,
+      "recallAtK": 0.75,
+      "precisionAtK": 0.15000000000000002,
+      "mrr": 0.625,
+      "ndcgAtK": 0.6577324383928644
+    },
+    "multi": {
+      "cases": 4,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "precisionAtK": 0.4,
+      "mrr": 0.875,
+      "ndcgAtK": 0.9233566009043177
+    },
+    "numeric": {
+      "cases": 6,
+      "hitAtK": 0.8333333333333334,
+      "recallAtK": 0.8333333333333334,
+      "precisionAtK": 0.16666666666666666,
+      "mrr": 0.8333333333333334,
+      "ndcgAtK": 0.8333333333333334
+    },
+    "overview": {
+      "cases": 2,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "precisionAtK": 0.2,
+      "mrr": 0.6666666666666666,
+      "ndcgAtK": 0.75
+    },
+    "paraphrase": {
+      "cases": 12,
+      "hitAtK": 0.9166666666666666,
+      "recallAtK": 0.9166666666666666,
+      "precisionAtK": 0.18333333333333332,
+      "mrr": 0.7916666666666666,
+      "ndcgAtK": 0.8217794263455654
+    },
+    "synonym": {
+      "cases": 9,
+      "hitAtK": 0.8888888888888888,
+      "recallAtK": 0.8888888888888888,
+      "precisionAtK": 0.17777777777777776,
+      "mrr": 0.7037037037037037,
+      "ndcgAtK": 0.7513177230158795
+    },
+    "typo": {
+      "cases": 5,
+      "hitAtK": 1,
+      "recallAtK": 1,
+      "precisionAtK": 0.2,
+      "mrr": 0.9,
+      "ndcgAtK": 0.9261859507142916
+    }
+  },
+  "latency": {
+    "meanMs": 975.1335376623379,
+    "p50Ms": 895.2524000000003,
+    "p95Ms": 1485.265900000013
+  },
+  "abstain": {
+    "answerableCases": 62,
+    "unanswerableCases": 15,
+    "meanTopScoreAnswerable": 0.7100333503679251,
+    "meanTopScoreUnanswerable": 0.6735012141875865,
+    "separationAuc": 0.6580645161290323,
+    "best": {
+      "threshold": 0.7447,
+      "answeredRate": 0.3225806451612903,
+      "falseAnswerRate": 0,
+      "f1": 0.4878048780487805,
+      "youden": 0.3225806451612903
+    }
+  },
+  "failures": [
+    "s03",
+    "fu01",
+    "p08",
+    "n06"
+  ],
+  "cases": [
+    {
+      "id": "f01",
+      "query": "¿Cuánto cuesta una limpieza dental?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8072795042584594,
+      "latencyMs": 846.4322999999995,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.9946,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.8072795042584594,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.9481,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.7128224010422224,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.9386,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.7278840789717279,
+          "keywordMatch": true
+        },
+        {
+          "docId": "implantes",
+          "score": 0.2574,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.646802415971534,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0003,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.7507032662874666,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f02",
+      "query": "¿Cuál es el horario de la clínica?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7693413359671083,
+      "latencyMs": 784.0837999999994,
+      "retrieved": [
+        {
+          "docId": "horarios",
+          "score": 0.9919,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.7516173204372675,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.3406,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6499737022405331,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.2214,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6911255139686399,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.1023,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.7017840317836617,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.013,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.7693413359671083,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f03",
+      "query": "¿Dónde está la clínica?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7713595323157164,
+      "latencyMs": 807.7352000000001,
+      "retrieved": [
+        {
+          "docId": "ubicacion",
+          "score": 0.9755,
+          "preview": "### Cómo llegar y contacto: Dirección La clínica está en la Calle Colón 25, 46004 Valencia",
+          "vectorScore": 0.7246258020409261,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.3402,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.7713595323157164,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.1478,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6913374358074587,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.1233,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6349268458656642,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0422,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6803913517661533,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f04",
+      "query": "¿Qué seguros aceptáis?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7079359133900437,
+      "latencyMs": 895.2524000000003,
+      "retrieved": [
+        {
+          "docId": "seguros",
+          "score": 0.1536,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.7079359133900437,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0038,
+          "preview": "### Formas de pago Aceptamos tarjeta, transferencia y efectivo. Ofrecemos financiación has",
+          "vectorScore": 0.660329113127977,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0001,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.6263532737947252,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5777580283744619,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.650883001023577,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f05",
+      "query": "¿Cuánto dura la primera visita?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7898589611955275,
+      "latencyMs": 858.6551,
+      "retrieved": [
+        {
+          "docId": "primera",
+          "score": 0.9882,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.7898589611955275,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ninos",
+          "score": 0.9821,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.6416087191207408,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0007,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.6122565612013335,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.6521093308876259,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5730984886673782,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f06",
+      "query": "¿Atendéis urgencias?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7982801919848537,
+      "latencyMs": 858.0532999999996,
+      "retrieved": [
+        {
+          "docId": "urgencias",
+          "score": 0.999,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.7982801919848537,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ninos",
+          "score": 0.2804,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.6416455989048688,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0789,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.7043049876965779,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.5965069825314893,
+          "keywordMatch": true
+        },
+        {
+          "docId": "seguros",
+          "score": 0,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.6256366426300305,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f07",
+      "query": "¿Cuánto cuesta un implante?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7493215022318582,
+      "latencyMs": 887.3754000000008,
+      "retrieved": [
+        {
+          "docId": "implantes",
+          "score": 0.9934,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.7493215022318582,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.9869,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.7248300949577688,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0014,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.6678702839880675,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6654203000450126,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6341076746437617,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f08",
+      "query": "¿Hasta cuándo puedo cancelar una cita sin coste?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8234240062566297,
+      "latencyMs": 908.6044000000002,
+      "retrieved": [
+        {
+          "docId": "cancelaciones",
+          "score": 0.9997,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.8234240062566297,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5939152214875209,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0001,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.5898622496727377,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0001,
+          "preview": "### Formas de pago Aceptamos tarjeta, transferencia y efectivo. Ofrecemos financiación has",
+          "vectorScore": 0.6300199511101747,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0001,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.5817283574186128,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f09",
+      "query": "¿A partir de qué edad atendéis a niños?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7202903805741364,
+      "latencyMs": 813.799500000001,
+      "retrieved": [
+        {
+          "docId": "ninos",
+          "score": 0.9902,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.7202903805741364,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0027,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6479739143126371,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.5750132275255205,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.5930312577204481,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5895570022440457,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f10",
+      "query": "¿Cuánto dura el tratamiento de ortodoncia?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7700390604420535,
+      "latencyMs": 806.0830999999998,
+      "retrieved": [
+        {
+          "docId": "ortodoncia",
+          "score": 0.9859,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.7700390604420535,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.9157,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.6903718605322945,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.1732,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.600253886699933,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0538,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6533380681272507,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0006,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.6411016928184632,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f11",
+      "query": "¿Cuál es el teléfono de la clínica?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 5,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.2,
+      "ndcg": 0.38685280723454163,
+      "topScore": 0.7433166661447874,
+      "latencyMs": 845.7842999999993,
+      "retrieved": [
+        {
+          "docId": "privacidad",
+          "score": 0.2541,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6534213064449275,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.089,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6383078451591498,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.046,
+          "preview": "### Cómo llegar y contacto: Dirección La clínica está en la Calle Colón 25, 46004 Valencia",
+          "vectorScore": 0.733320485101879,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0267,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.7433166661447874,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0015,
+          "preview": "### Contacto Teléfono: 960 123 456. WhatsApp: 600 123 456. Respondemos los mensajes de Wha",
+          "vectorScore": 0.7267965197062991,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f12",
+      "query": "¿Tenéis WhatsApp?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8031438111433628,
+      "latencyMs": 794.4305000000004,
+      "retrieved": [
+        {
+          "docId": "ubicacion",
+          "score": 0.0879,
+          "preview": "### Contacto Teléfono: 960 123 456. WhatsApp: 600 123 456. Respondemos los mensajes de Wha",
+          "vectorScore": 0.8031438111433628,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.001,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6215729805358128,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.5934137993485934,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5590017608498863,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ninos",
+          "score": 0,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.5877672179078802,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p01",
+      "query": "¿Qué pasa si no puedo ir a mi cita y no aviso?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6480838859183395,
+      "latencyMs": 809.3016000000007,
+      "retrieved": [
+        {
+          "docId": "cancelaciones",
+          "score": 0.9759,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6480838859183395,
+          "keywordMatch": true
+        },
+        {
+          "docId": "seguros",
+          "score": 0.0002,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.592573527616152,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0002,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.5950222018606511,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5676624088483759,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0001,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.5894900721029359,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p02",
+      "query": "Me duele mucho una muela, ¿podéis verme hoy?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.5959882283073281,
+      "latencyMs": 781.5974000000006,
+      "retrieved": [
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.5959882283073281,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5618601663293519,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.5698295108894873,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.5610608237959557,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.5677916635723312,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p03",
+      "query": "¿Puedo pagar un tratamiento a plazos?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 4,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.25,
+      "ndcg": 0.43067655807339306,
+      "topScore": 0.6331893435865835,
+      "latencyMs": 797.2260000000024,
+      "retrieved": [
+        {
+          "docId": "privacidad",
+          "score": 0.0247,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6331893435865835,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0.0162,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.614537680926103,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0109,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.6064349724635028,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.008,
+          "preview": "### Formas de pago Aceptamos tarjeta, transferencia y efectivo. Ofrecemos financiación has",
+          "vectorScore": 0.6233875348961919,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5878251384565494,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p04",
+      "query": "¿Qué tengo que llevar a la primera cita?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 4,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.25,
+      "ndcg": 0.43067655807339306,
+      "topScore": 0.6575240153432823,
+      "latencyMs": 791.0414999999994,
+      "retrieved": [
+        {
+          "docId": "cancelaciones",
+          "score": 0.1872,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6575240153432823,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0179,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.6302318913496043,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0027,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6004974022050281,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0008,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.5991004486213471,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0004,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.603187165555348,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p05",
+      "query": "¿Cómo puedo pedir que borréis mis datos?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.698134561569796,
+      "latencyMs": 783.4383000000016,
+      "retrieved": [
+        {
+          "docId": "privacidad",
+          "score": 0.0019,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.698134561569796,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.0002,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6515221258676431,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.614978165825442,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6356591119605939,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.5805342224230614,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p06",
+      "query": "¿Cómo llego a la clínica en transporte público?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7352722336408622,
+      "latencyMs": 793.5387999999984,
+      "retrieved": [
+        {
+          "docId": "ubicacion",
+          "score": 0.9661,
+          "preview": "### Cómo llegar y contacto: Dirección La clínica está en la Calle Colón 25, 46004 Valencia",
+          "vectorScore": 0.7352722336408622,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0017,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.692062580719235,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0012,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5972881786818268,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0012,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6554684499986586,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0007,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6565513233367892,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s01",
+      "query": "¿Cuánto cuesta tapar una caries?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7219049316439179,
+      "latencyMs": 818.5339999999997,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.078,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.7116619207230032,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0076,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.7219049316439179,
+          "keywordMatch": true
+        },
+        {
+          "docId": "implantes",
+          "score": 0.0052,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.6540177586681392,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6185508577478451,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6780429946662462,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s02",
+      "query": "¿Ponéis aparatos para los dientes torcidos?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6309297535714575,
+      "topScore": 0.6331714815396051,
+      "latencyMs": 971.4123999999974,
+      "retrieved": [
+        {
+          "docId": "urgencias",
+          "score": 0.0002,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6331714815396051,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0.0001,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.6183990711981026,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0,
+          "preview": "### Formas de pago Aceptamos tarjeta, transferencia y efectivo. Ofrecemos financiación has",
+          "vectorScore": 0.6050561917267601,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6119486634081854,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6118540989852241,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s03",
+      "query": "¿Podéis aclarar el color de mis dientes?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.626301639835553,
+      "latencyMs": 928.8487999999998,
+      "retrieved": [
+        {
+          "docId": "urgencias",
+          "score": 0.0012,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6196198890247457,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.5546144843309142,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.626301639835553,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.573863594548403,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.5629540453936493,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s04",
+      "query": "¿Aceptáis la tarjeta sanitaria?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7040540629443459,
+      "latencyMs": 944.1964000000007,
+      "retrieved": [
+        {
+          "docId": "seguros",
+          "score": 0.8891,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.6942823407962568,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.6068,
+          "preview": "### Formas de pago Aceptamos tarjeta, transferencia y efectivo. Ofrecemos financiación has",
+          "vectorScore": 0.7040540629443459,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.6248876918321717,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5872213557008336,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6122420285589385,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s05",
+      "query": "¿Abrís los fines de semana?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 3,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.3333333333333333,
+      "ndcg": 0.5,
+      "topScore": 0.6447889410406616,
+      "latencyMs": 914.9658999999992,
+      "retrieved": [
+        {
+          "docId": "seguros",
+          "score": 0,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.6292926674167924,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6428858284659639,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6301298782805941,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5966488216829218,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6447889410406616,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "t01",
+      "query": "cuanto cuesta la limpiesa dental",
+      "type": "typo",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8235176755649843,
+      "latencyMs": 887.9697999999989,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.9894,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.8235176755649843,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.3095,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.7247539473873831,
+          "keywordMatch": true
+        },
+        {
+          "docId": "implantes",
+          "score": 0.1336,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.6790526389601829,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0299,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.719371360995075,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0001,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.7363865943099873,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "t02",
+      "query": "horairo de agosto?",
+      "type": "typo",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6241574648331105,
+      "latencyMs": 863.9442000000017,
+      "retrieved": [
+        {
+          "docId": "horarios",
+          "score": 0.0595,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.6241574648331105,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0002,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6123828396380334,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.5830818003026823,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.524145759024516,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.5371367836754979,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "t03",
+      "query": "ortodoncia invisibe precio",
+      "type": "typo",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6309297535714575,
+      "topScore": 0.7317548902099067,
+      "latencyMs": 889.6764000000003,
+      "retrieved": [
+        {
+          "docId": "ortodoncia",
+          "score": 0.9099,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.7317548902099067,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0074,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.6521294793389677,
+          "keywordMatch": true
+        },
+        {
+          "docId": "implantes",
+          "score": 0.0001,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.5812455780355285,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5936779044484816,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6363016789267164,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "n01",
+      "query": "¿Cuánto cuesta el blanqueamiento?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7802106759240857,
+      "latencyMs": 946.7327000000005,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.991,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.6673934449543384,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.9393,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.7802106759240857,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6341756240806107,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.6283074440637902,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.6004021332494586,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "n02",
+      "query": "¿Cuánto cuesta una radiografía panorámica?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7779646037438196,
+      "latencyMs": 822.0872000000018,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.9897,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.7779646037438196,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0803,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.7163943408693119,
+          "keywordMatch": true
+        },
+        {
+          "docId": "implantes",
+          "score": 0.0006,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.6437732189447766,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0.0002,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.6267239902385672,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6403767403415102,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "n03",
+      "query": "¿Cuánto cuesta el estudio 3D antes de un implante?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7758993057260075,
+      "latencyMs": 809.2453999999998,
+      "retrieved": [
+        {
+          "docId": "implantes",
+          "score": 0.9992,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.7758993057260075,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.9242,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.6708858275930625,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0.5533,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.6752196906885467,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0028,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5973181792977126,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0026,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6009808066673068,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "n04",
+      "query": "¿A qué hora cerráis los viernes?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6733800792268699,
+      "latencyMs": 832.4429999999993,
+      "retrieved": [
+        {
+          "docId": "horarios",
+          "score": 0.686,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6733800792268699,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.0004,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.5798992185618027,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6043881862083315,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5463049044348592,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.575792628347246,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "m01",
+      "query": "Quiero un blanqueamiento y una limpieza: ¿cuánto cuestan y cuánto tiempo lleva el blanqueamiento?",
+      "type": "multi",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.4,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8007665384390588,
+      "latencyMs": 854.1578000000009,
+      "retrieved": [
+        {
+          "docId": "blanqueamiento",
+          "score": 0.9628,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.8007665384390588,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.6406,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.6149035454504065,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.1068,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.651110609565364,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0003,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.6094094289886374,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0002,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6294113569075411,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "m02",
+      "query": "Tengo seguro de Adeslas y quiero ortodoncia: ¿me lo cubren y cuánto dura?",
+      "type": "multi",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.4,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6624623294255164,
+      "latencyMs": 907.2112000000016,
+      "retrieved": [
+        {
+          "docId": "seguros",
+          "score": 0.0473,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.6153691658147674,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0.0093,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.6624623294255164,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ninos",
+          "score": 0.0003,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.60250966383325,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0001,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.5627493896841107,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5576278905467255,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "fu01",
+      "query": "¿Y hay que hacer alguna prueba antes?",
+      "type": "followup",
+      "answerable": true,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6406667524405399,
+      "latencyMs": 1242.4820999999974,
+      "retrieved": [
+        {
+          "docId": "ortodoncia",
+          "score": 0.001,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.603663993524624,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0009,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6406667524405399,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.0008,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.5996605648718135,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0002,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6242007073409729,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5996679142971709,
+          "keywordMatch": false
+        }
+      ]
+    },
+    {
+      "id": "fu02",
+      "query": "¿Y qué días atiende?",
+      "type": "followup",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6506663196575911,
+      "latencyMs": 919.6795999999958,
+      "retrieved": [
+        {
+          "docId": "ninos",
+          "score": 0.8853,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.6202170754692913,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0646,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6506663196575911,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0003,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.6221153664566523,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0001,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6100763437861288,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.6186454350137848,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "o01",
+      "query": "¿Qué tratamientos ofrecéis y a qué precio?",
+      "type": "overview",
+      "answerable": true,
+      "firstRelevantRank": 3,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.3333333333333333,
+      "ndcg": 0.5,
+      "topScore": 0.6443244264561214,
+      "latencyMs": 964.2173000000039,
+      "retrieved": [
+        {
+          "docId": "ortodoncia",
+          "score": 0.9833,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.6443244264561214,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.8305,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.6226068840716785,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.6496,
+          "preview": "### Formas de pago Aceptamos tarjeta, transferencia y efectivo. Ofrecemos financiación has",
+          "vectorScore": 0.6026829137095717,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.1365,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.598226036169742,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0048,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.6186308159142556,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "o02",
+      "query": "Cuéntame cómo es la primera visita y qué incluye",
+      "type": "overview",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7301190855733438,
+      "latencyMs": 841.501400000001,
+      "retrieved": [
+        {
+          "docId": "primera",
+          "score": 0.9237,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.7301190855733438,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ninos",
+          "score": 0.6376,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.6585021217317192,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0019,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.6265938049752551,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0001,
+          "preview": "### Cómo llegar y contacto: Dirección La clínica está en la Calle Colón 25, 46004 Valencia",
+          "vectorScore": 0.6104997839858016,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0001,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.6645851803427216,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u01",
+      "query": "¿Hacéis cirugía con sedación general?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6135591785207671,
+      "latencyMs": 1452.582699999999,
+      "retrieved": [
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5777697501372404,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0001,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.584811763899095,
+          "keywordMatch": true
+        },
+        {
+          "docId": "seguros",
+          "score": 0,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.5934987903630199,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6135591785207671,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.592474294065518,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u02",
+      "query": "¿Cuánto cuesta una endodoncia?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.7324101968914124,
+      "latencyMs": 1098.9582999999984,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.9321,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.7308568101989804,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.4524,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.656123367645568,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0063,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6873280133210327,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0.0001,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.6738448456296199,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.7324101968914124,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u03",
+      "query": "¿Cuántos dentistas trabajan en la clínica?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.7043299646471158,
+      "latencyMs": 1029.4144000000015,
+      "retrieved": [
+        {
+          "docId": "blanqueamiento",
+          "score": 0.4722,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6478928039439992,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.2026,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6788934714510615,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0143,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.7043299646471158,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0079,
+          "preview": "### Cómo llegar y contacto: Dirección La clínica está en la Calle Colón 25, 46004 Valencia",
+          "vectorScore": 0.6420487951572295,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0018,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6487798431465852,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u04",
+      "query": "¿Aceptáis pagos con criptomonedas?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6778479542060608,
+      "latencyMs": 980.8769000000029,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.3539,
+          "preview": "### Formas de pago Aceptamos tarjeta, transferencia y efectivo. Ofrecemos financiación has",
+          "vectorScore": 0.6778479542060608,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5916079799188849,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5799457395530985,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6205171565933238,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5692349465000982,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u05",
+      "query": "¿Cuál es el CIF de la clínica?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.7111973853055863,
+      "latencyMs": 1010.2981,
+      "retrieved": [
+        {
+          "docId": "privacidad",
+          "score": 0.9154,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6818886057455166,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.1747,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6044559284697885,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0704,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6300306697401298,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0172,
+          "preview": "### Cómo llegar y contacto: Dirección La clínica está en la Calle Colón 25, 46004 Valencia",
+          "vectorScore": 0.6883576632592097,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0125,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.7111973853055863,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u06",
+      "query": "¿Tenéis otra clínica en Madrid?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.744022077776586,
+      "latencyMs": 1057.8759999999966,
+      "retrieved": [
+        {
+          "docId": "horarios",
+          "score": 0.0113,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.744022077776586,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0092,
+          "preview": "### Cómo llegar y contacto: Dirección La clínica está en la Calle Colón 25, 46004 Valencia",
+          "vectorScore": 0.6890862498420529,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0052,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6900490322161761,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0003,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6319679838399849,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ninos",
+          "score": 0,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.6264654666790478,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u07",
+      "query": "¿Ponéis ortodoncia a niños de 8 años?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.7264495107965553,
+      "latencyMs": 1686.6782999999996,
+      "retrieved": [
+        {
+          "docId": "ninos",
+          "score": 0.8272,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.7264495107965553,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0.0058,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.6779618671760942,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0006,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.6246339581770605,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5758557139149703,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6040543223154428,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f13",
+      "query": "¿Tengo que rellenar algún formulario de salud?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.738695807584098,
+      "latencyMs": 1378.136099999996,
+      "retrieved": [
+        {
+          "docId": "primera",
+          "score": 0.9501,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.738695807584098,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.645852685590963,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.649817605211206,
+          "keywordMatch": true
+        },
+        {
+          "docId": "seguros",
+          "score": 0,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.5948526620496446,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6419814401375833,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f14",
+      "query": "¿Cuánto cuesta la primera visita de un niño?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7008351917358534,
+      "latencyMs": 1879.1875,
+      "retrieved": [
+        {
+          "docId": "ninos",
+          "score": 0.9717,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.6836226905417959,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.923,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.7008351917358534,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0281,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.5519563941860814,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5707988054630883,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.581608073606677,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f15",
+      "query": "¿Quién es el responsable del tratamiento de mis datos?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7799601563144359,
+      "latencyMs": 1921.7755000000034,
+      "retrieved": [
+        {
+          "docId": "privacidad",
+          "score": 0.9971,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.7799601563144359,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0207,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.6108250362359591,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0008,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.5685928307944452,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0003,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.5746723223409176,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0002,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.6232568742240064,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f16",
+      "query": "¿Cuánto tiempo guardáis mi historial clínico?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7126732037941572,
+      "latencyMs": 1401.203499999996,
+      "retrieved": [
+        {
+          "docId": "privacidad",
+          "score": 0.0163,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6913989533127942,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6910335319421693,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6130330949178111,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.7126732037941572,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6604734265205889,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f17",
+      "query": "¿Cada cuánto hay revisiones durante la ortodoncia?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7317239749612322,
+      "latencyMs": 1076.285800000005,
+      "retrieved": [
+        {
+          "docId": "ortodoncia",
+          "score": 0.3147,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.7317239749612322,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0073,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6305787020079753,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.006,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.6404526510130863,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.6397938896920836,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6124445795237667,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f18",
+      "query": "¿A qué número llamo en una urgencia fuera de horario?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7825212504276471,
+      "latencyMs": 961.5071000000025,
+      "retrieved": [
+        {
+          "docId": "urgencias",
+          "score": 0.9934,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.7825212504276471,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.7586,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6822210284626343,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.0538,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6245871668041618,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0057,
+          "preview": "### Contacto Teléfono: 960 123 456. WhatsApp: 600 123 456. Respondemos los mensajes de Wha",
+          "vectorScore": 0.6139993958316587,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0009,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6208338566818417,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f19",
+      "query": "¿Cuánto cuesta un empaste?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6999742086538989,
+      "latencyMs": 915.1805999999997,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.9943,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.6999742086538989,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6448187483617567,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.5799639985333213,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6444742861567383,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5733231258437321,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "f20",
+      "query": "¿Respondéis a los mensajes de WhatsApp por la noche?",
+      "type": "factual",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.8279102847721848,
+      "latencyMs": 1040.5829999999987,
+      "retrieved": [
+        {
+          "docId": "ubicacion",
+          "score": 0.9928,
+          "preview": "### Contacto Teléfono: 960 123 456. WhatsApp: 600 123 456. Respondemos los mensajes de Wha",
+          "vectorScore": 0.8279102847721848,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.1204,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6388932048013944,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ninos",
+          "score": 0.0002,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.5978826172771832,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0001,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.619500615885797,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0001,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6183840943270049,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p07",
+      "query": "Mi aseguradora no está en vuestra lista, ¿puedo pedir que me devuelvan el dinero?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6233089698374596,
+      "latencyMs": 1229.469799999999,
+      "retrieved": [
+        {
+          "docId": "seguros",
+          "score": 0.9052,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.6233089698374596,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.0004,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.5879720274315386,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0.0001,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.5522315975335331,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.5673701500860118,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5549140710502184,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p08",
+      "query": "¿Hay sitio para dejar el coche cerca de la clínica?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.731000684244823,
+      "latencyMs": 1108.510000000002,
+      "retrieved": [
+        {
+          "docId": "horarios",
+          "score": 0.5246,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.7056335156280491,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0806,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6180280310604006,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0092,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.670106803056235,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.005,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.731000684244823,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0037,
+          "preview": "### Cómo llegar y contacto: Dirección La clínica está en la Calle Colón 25, 46004 Valencia",
+          "vectorScore": 0.6625225852249718,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p09",
+      "query": "¿Se pasa mal después del blanqueamiento?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7892977470159483,
+      "latencyMs": 934.5445000000036,
+      "retrieved": [
+        {
+          "docId": "blanqueamiento",
+          "score": 0.9004,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.7892977470159483,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.2979,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.6140744406776483,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6035946762215381,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.6110225682129284,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6494026685699131,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p10",
+      "query": "Estoy embarazada, ¿me puedo aclarar los dientes?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6503830029800325,
+      "latencyMs": 901.1814999999988,
+      "retrieved": [
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0046,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6503830029800325,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ortodoncia",
+          "score": 0.0001,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.5930998950714276,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0001,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6367159535156423,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ninos",
+          "score": 0,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.619905075415549,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.6033939881699704,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p11",
+      "query": "¿Me dormís para poner un implante?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7049675553601644,
+      "latencyMs": 890.2096999999994,
+      "retrieved": [
+        {
+          "docId": "implantes",
+          "score": 0.0762,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.7049675553601644,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0049,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.653817265140951,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6063638570455211,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6242201801785303,
+          "keywordMatch": true
+        },
+        {
+          "docId": "seguros",
+          "score": 0,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.599654411871724,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "p12",
+      "query": "¿Cuánto hay que esperar para que me pongan la corona definitiva?",
+      "type": "paraphrase",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6790765857300449,
+      "latencyMs": 897.786500000002,
+      "retrieved": [
+        {
+          "docId": "implantes",
+          "score": 0.28,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.6790765857300449,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.0002,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.5782870898085641,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5489360131108127,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0001,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5862261329593083,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0001,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.5969888903910339,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s06",
+      "query": "¿Con qué compañías médicas tenéis convenio?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6309297535714575,
+      "topScore": 0.657022631308624,
+      "latencyMs": 847.7712000000029,
+      "retrieved": [
+        {
+          "docId": "primera",
+          "score": 0.0007,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.657022631308624,
+          "keywordMatch": true
+        },
+        {
+          "docId": "seguros",
+          "score": 0,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.6131949272880974,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6109928271347284,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.5972730426354134,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.6055377595360278,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s07",
+      "query": "¿Os puedo mandar un mensaje para mover mi cita?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6204788159173339,
+      "latencyMs": 824.0339000000022,
+      "retrieved": [
+        {
+          "docId": "cancelaciones",
+          "score": 0.0067,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6122410882235744,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0001,
+          "preview": "### Contacto Teléfono: 960 123 456. WhatsApp: 600 123 456. Respondemos los mensajes de Wha",
+          "vectorScore": 0.5820596092597481,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5541248780088212,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6012292410121864,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.6204788159173339,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s08",
+      "query": "¿Me dan algo para mantener los dientes rectos cuando termine?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6230161307838791,
+      "latencyMs": 794.6290999999983,
+      "retrieved": [
+        {
+          "docId": "ortodoncia",
+          "score": 0.0061,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.5812810046973682,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0001,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6230161307838791,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5769645567196736,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0,
+          "preview": "### Formas de pago Aceptamos tarjeta, transferencia y efectivo. Ofrecemos financiación has",
+          "vectorScore": 0.6143107651911004,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5938068164662647,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "s09",
+      "query": "¿De qué formas puedo abonar el tratamiento?",
+      "type": "synonym",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6352737153481721,
+      "latencyMs": 1461.7042999999976,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.8495,
+          "preview": "### Formas de pago Aceptamos tarjeta, transferencia y efectivo. Ofrecemos financiación has",
+          "vectorScore": 0.6352737153481721,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.7745,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5998567912000844,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.2294,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.593590328809597,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0034,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.5986219397388339,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0.0008,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.6182197287752362,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "t04",
+      "query": "implnate dental precio",
+      "type": "typo",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6532954715998355,
+      "latencyMs": 934.2229999999981,
+      "retrieved": [
+        {
+          "docId": "implantes",
+          "score": 0.0155,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.6204505853305727,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0002,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6338641510996387,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.621943256885514,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6009713704394339,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.6532954715998355,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "t05",
+      "query": "urgencia dental fuera de horairo",
+      "type": "typo",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.7769663910314465,
+      "latencyMs": 848.977899999998,
+      "retrieved": [
+        {
+          "docId": "urgencias",
+          "score": 0.9995,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.7769663910314465,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.2363,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6725188214047711,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0008,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6393138662083131,
+          "keywordMatch": true
+        },
+        {
+          "docId": "implantes",
+          "score": 0,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.6305766568446879,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5885852061083839,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "n05",
+      "query": "¿A cuántos meses se puede financiar un tratamiento?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6980145270355667,
+      "latencyMs": 933.6469999999972,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.7766,
+          "preview": "### Formas de pago Aceptamos tarjeta, transferencia y efectivo. Ofrecemos financiación has",
+          "vectorScore": 0.6980145270355667,
+          "keywordMatch": true
+        },
+        {
+          "docId": "implantes",
+          "score": 0.7193,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.5418672091938952,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.3378,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5957048487987757,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0347,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5604867822312521,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0112,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5709780311943309,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "n06",
+      "query": "¿Desde qué importe se puede financiar?",
+      "type": "numeric",
+      "answerable": true,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.5718428452533747,
+      "latencyMs": 883.1940999999933,
+      "retrieved": [
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0352,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5181615729076152,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0051,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5534601875281799,
+          "keywordMatch": true
+        },
+        {
+          "docId": "implantes",
+          "score": 0.0001,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.5243400562626775,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.0001,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.5718428452533747,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.5178803073297101,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "m03",
+      "query": "Tengo Sanitas y me ha dolido una muela el sábado: ¿qué hago?",
+      "type": "multi",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.4,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.615089225626565,
+      "latencyMs": 870.4927999999927,
+      "retrieved": [
+        {
+          "docId": "seguros",
+          "score": 0.0033,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.6134240651735837,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0016,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.615089225626565,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0004,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.5809685908748776,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0002,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.553768269275805,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0002,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5411613444222438,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "m04",
+      "query": "¿Cuánto cuesta la primera visita y cuánto dura?",
+      "type": "multi",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.4,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6934264036172708,
+      "topScore": 0.7568541039081564,
+      "latencyMs": 784.7067000000097,
+      "retrieved": [
+        {
+          "docId": "ninos",
+          "score": 0.8673,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.6328736187889801,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.844,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.7568541039081564,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0891,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.6005519571807552,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0045,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.5940706869581931,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ubicacion",
+          "score": 0,
+          "preview": "### Aparcamiento El parking público de la Plaza del Ayuntamiento queda a unos cinco minuto",
+          "vectorScore": 0.6456027326019722,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "fu03",
+      "query": "¿Y duele?",
+      "type": "followup",
+      "answerable": true,
+      "firstRelevantRank": 2,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 0.5,
+      "ndcg": 0.6309297535714575,
+      "topScore": 0.7092567457417291,
+      "latencyMs": 815.3896000000095,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.9244,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.5882228997693817,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.6078,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.7092567457417291,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0001,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6004468010294239,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.5779097146161065,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5979305968003845,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "fu04",
+      "query": "¿Y cada cuánto tengo que ir a revisión?",
+      "type": "followup",
+      "answerable": true,
+      "firstRelevantRank": 1,
+      "hit": 1,
+      "recall": 1,
+      "precision": 0.2,
+      "reciprocalRank": 1,
+      "ndcg": 1,
+      "topScore": 0.6847341573489473,
+      "latencyMs": 849.2214999999997,
+      "retrieved": [
+        {
+          "docId": "ortodoncia",
+          "score": 0.0129,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.6061977511174301,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.0004,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.6816699150500115,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0001,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.6847341573489473,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.6022636388658427,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5905971888797505,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u08",
+      "query": "¿Qué marca de implantes utilizáis?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6730880816779906,
+      "latencyMs": 809.2856000000029,
+      "retrieved": [
+        {
+          "docId": "implantes",
+          "score": 0.0055,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.6730880816779906,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Qué traer Trae tu DNI y, si las tienes, radiografías anteriores. Si tomas medicación, ",
+          "vectorScore": 0.6169543304326527,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6395645459392034,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.6043102859405485,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6241924350113767,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u09",
+      "query": "¿Ofrecéis sedación para niños con mucho miedo?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6418693436792896,
+      "latencyMs": 826.850099999996,
+      "retrieved": [
+        {
+          "docId": "ortodoncia",
+          "score": 0.172,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.5977070975611668,
+          "keywordMatch": true
+        },
+        {
+          "docId": "ninos",
+          "score": 0.0114,
+          "preview": "### Odontopediatría Atendemos a niños desde los 3 años. La primera visita infantil es grat",
+          "vectorScore": 0.6418693436792896,
+          "keywordMatch": true
+        },
+        {
+          "docId": "seguros",
+          "score": 0.0003,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.5762080226249906,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0001,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5964360212041872,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0001,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5781794797772593,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u10",
+      "query": "¿Cuánto cuesta una corona de porcelana sobre un diente natural?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6080765048276355,
+      "latencyMs": 893.4195000000036,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.8397,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.5656050578069167,
+          "keywordMatch": true
+        },
+        {
+          "docId": "implantes",
+          "score": 0.8169,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.6067651761840007,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0.0953,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6080765048276355,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0.0009,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5649672604969408,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.0006,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.5634576117295365,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u11",
+      "query": "¿Hacéis extracciones de muelas del juicio?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6127239139174513,
+      "latencyMs": 1485.265900000013,
+      "retrieved": [
+        {
+          "docId": "ortodoncia",
+          "score": 0.0004,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.6037307864114356,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0002,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5615105289237428,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0001,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6127239139174513,
+          "keywordMatch": true
+        },
+        {
+          "docId": "seguros",
+          "score": 0,
+          "preview": "### Seguros y mutuas Trabajamos con Sanitas, Adeslas y DKV. No trabajamos con la sanidad p",
+          "vectorScore": 0.5894382318641522,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.6049645025817175,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u12",
+      "query": "¿Se puede pagar con Bizum?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.5759276488098761,
+      "latencyMs": 1263.6698999999935,
+      "retrieved": [
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0046,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5518200003853918,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0001,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5274628155371465,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0.0001,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.5412561834105956,
+          "keywordMatch": true
+        },
+        {
+          "docId": "primera",
+          "score": 0,
+          "preview": "### Primera visita En la primera visita hacemos una revisión completa, una radiografía si ",
+          "vectorScore": 0.5759276488098761,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.5753768928071714,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u13",
+      "query": "¿Tenéis descuento para estudiantes?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.6390267310109908,
+      "latencyMs": 1000.7255999999907,
+      "retrieved": [
+        {
+          "docId": "ortodoncia",
+          "score": 0.0002,
+          "preview": "### Ortodoncia Ofrecemos brackets metálicos, brackets estéticos de cerámica y alineadores ",
+          "vectorScore": 0.6390267310109908,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.5699958940153392,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.5706235111906423,
+          "keywordMatch": true
+        },
+        {
+          "docId": "cancelaciones",
+          "score": 0,
+          "preview": "### Cancelaciones y cambios de cita Puedes cancelar o cambiar tu cita sin coste hasta 24 h",
+          "vectorScore": 0.5611070337722748,
+          "keywordMatch": true
+        },
+        {
+          "docId": "urgencias",
+          "score": 0,
+          "preview": "### Urgencias dentales Atendemos las urgencias (dolor fuerte, un golpe o un diente roto) e",
+          "vectorScore": 0.607072419919206,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u14",
+      "query": "¿Cuánto cuesta una prótesis dental completa?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.7117306995519016,
+      "latencyMs": 957.3818000000028,
+      "retrieved": [
+        {
+          "docId": "precios",
+          "score": 0.9684,
+          "preview": "### Tratamientos habituales Una obturación (empaste) cuesta 60 € por pieza. El blanqueamie",
+          "vectorScore": 0.7117306995519016,
+          "keywordMatch": true
+        },
+        {
+          "docId": "precios",
+          "score": 0.3855,
+          "preview": "### Tarifas: Revisión y limpieza La primera revisión es gratuita. La limpieza dental cuest",
+          "vectorScore": 0.7084743772488823,
+          "keywordMatch": true
+        },
+        {
+          "docId": "implantes",
+          "score": 0.1831,
+          "preview": "### Implantes dentales Un implante con corona cuesta 1.450 €. Antes de colocarlo hacemos u",
+          "vectorScore": 0.6648184983898334,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0012,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6907817638693097,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0002,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6972996802329702,
+          "keywordMatch": true
+        }
+      ]
+    },
+    {
+      "id": "u15",
+      "query": "¿Hay ascensor para llegar a la clínica?",
+      "type": "unanswerable",
+      "answerable": false,
+      "firstRelevantRank": null,
+      "hit": 0,
+      "recall": 0,
+      "precision": 0,
+      "reciprocalRank": 0,
+      "ndcg": 0,
+      "topScore": 0.7302590211945784,
+      "latencyMs": 926.7085999999981,
+      "retrieved": [
+        {
+          "docId": "ubicacion",
+          "score": 0.789,
+          "preview": "### Cómo llegar y contacto: Dirección La clínica está en la Calle Colón 25, 46004 Valencia",
+          "vectorScore": 0.7302590211945784,
+          "keywordMatch": true
+        },
+        {
+          "docId": "blanqueamiento",
+          "score": 0.0185,
+          "preview": "### Blanqueamiento dental El blanqueamiento se hace en una sola sesión de 60 minutos en la",
+          "vectorScore": 0.6012163005400373,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0018,
+          "preview": "### Horario de la clínica: Horario habitual De lunes a jueves de 9:00 a 20:00. Viernes de ",
+          "vectorScore": 0.6566586567488116,
+          "keywordMatch": true
+        },
+        {
+          "docId": "privacidad",
+          "score": 0.0011,
+          "preview": "### Protección de datos Tus datos se tratan conforme al RGPD y a la LOPDGDD. El responsabl",
+          "vectorScore": 0.6410116644919752,
+          "keywordMatch": true
+        },
+        {
+          "docId": "horarios",
+          "score": 0.0008,
+          "preview": "### Verano En agosto la clínica abre solo por las mañanas, de 9:00 a 14:00.",
+          "vectorScore": 0.7137010236344844,
+          "keywordMatch": true
+        }
+      ]
+    }
+  ]
+}

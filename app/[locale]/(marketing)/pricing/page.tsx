@@ -16,10 +16,9 @@ const COMPARISON_ROWS = [
   { feature: 'Answers strictly from your documents (No made-up facts)', starter: 'Included', growth: 'Included', scale: 'Included' },
   { feature: 'Zero markup on AI costs (BYOK)', starter: 'Included', growth: 'Included', scale: 'Included' },
   { feature: 'Guaranteed No Double-Bookings', starter: 'Basic locking', growth: 'Instant Slot Lock', scale: 'Instant Slot Lock' },
-  { feature: 'Google Calendar & Outlook Sync', starter: '—', growth: 'Included', scale: 'Included' },
+  { feature: 'Booking calendar feed (Google, Outlook, Apple)', starter: '—', growth: 'Included', scale: 'Included' },
   { feature: 'WhatsApp & Telegram Bots', starter: '—', growth: '—', scale: 'Included' },
   { feature: 'Live Staff Audio Chimes & Takeover', starter: 'Email only', growth: 'Audio + Desktop', scale: 'Priority Multi-seat' },
-  { feature: 'Custom website address (e.g. chat.yourshop.com)', starter: '—', growth: 'Included', scale: 'Included (Multi-domain)' },
   { feature: 'Automatic notifications & webhooks', starter: 'Standard', growth: 'High-frequency', scale: 'Dedicated Webhooks' },
 ];
 
@@ -34,10 +33,8 @@ export default function PricingPage() {
         <section className="mk-hero" style={{ marginTop: '12px' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-              <T>PRICING</T>
-            </p>
             <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
+              <span className="mk-h1-kicker"><T>AI website assistant pricing</T></span>{' '}
               <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
                 <T>Simple pricing.</T> <span className="mk-echo-em"><T>Zero</T></span> <T>surprises.</T>
               </span>

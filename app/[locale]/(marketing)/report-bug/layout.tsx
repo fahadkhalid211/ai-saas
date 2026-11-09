@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { JsonLd } from '@/components/marketing/JsonLd';
 import { breadcrumbSchema, webPageSchema } from '@/lib/schema';
 
-const description = 'Encountered a bug, broken feature, or unexpected glitch in Crescelo? Submit a detailed bug report directly to our engineering team for rapid triage and resolution.';
+const description = 'Found a bug, a broken feature or an unexpected glitch in Crescelo? Send a detailed bug report to our engineering team so it can be triaged and fixed.';
 
 export async function generateMetadata(): Promise<Metadata> {
   return localizeMeta(withSocial({

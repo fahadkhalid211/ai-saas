@@ -1,5 +1,5 @@
 import { PUBLISHED_INDEX } from './index';
-import { isIndexable } from './indexing';
+import { CANONICAL_ELSEWHERE, isIndexable } from './indexing';
 import { NOT_CRAWLED_SLUGS } from './not-indexed';
 
 /**
@@ -68,7 +68,7 @@ export const NEW_DAILY_SCHEDULE_SLUGS = [
 ];
 
 /** Slugs in release order: indexable articles only (the held-back ones in lib/blog/indexing.ts are never submitted). */
-const submittable = PUBLISHED_INDEX.filter((p) => isIndexable(p.slug)).map((p) => p.slug);
+const submittable = PUBLISHED_INDEX.filter((p) => isIndexable(p.slug) && !CANONICAL_ELSEWHERE[p.slug]).map((p) => p.slug);
 const rest = submittable.filter((s) => !ALREADY_SUBMITTED.includes(s) && !NEW_DAILY_SCHEDULE_SLUGS.includes(s));
 const ORDER: string[] = [
   ...ALREADY_SUBMITTED.filter((s) => submittable.includes(s)),

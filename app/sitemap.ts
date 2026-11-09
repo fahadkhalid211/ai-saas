@@ -5,6 +5,9 @@ import { releasedSlugs } from '@/lib/blog/schedule';
 import { blogLanguages, translatedSlugs } from '@/lib/blog/translations';
 import { HREFLANG, LOCALES, isLocalizablePath, localizeHref } from '@/lib/i18n/paths';
 import type { SupportedLocale } from '@/lib/i18n/types';
+import { INDUSTRIES } from '@/lib/industries';
+import { INTEGRATION_PAGES } from '@/lib/integration-pages';
+import { INDEXED_TOPICS } from '@/lib/blog/topics';
 
 /**
  * The languages whose pages are submitted. English and Spanish: Spain is a market the site is being prepared for. The Swedish, Finnish
@@ -25,10 +28,10 @@ const TRANSLATION_UPDATED: Record<string, string> = {
 };
 
 /** Bump this when the marketing pages change in a way worth re-crawling. */
-const SITE_UPDATED = '2026-10-23';
+const SITE_UPDATED = '2026-11-06';
 
 /** Every public page that should be in search results. Sign-in and private areas are left out on purpose. */
-const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'monthly' | 'yearly' }[] = [
+const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'monthly' | 'yearly'; englishOnly?: boolean }[] = [
   // Core marketing
   { path: '',                                          priority: 1.0, changeFrequency: 'weekly'  },
   { path: '/product',                                  priority: 0.9, changeFrequency: 'monthly' },
@@ -42,11 +45,20 @@ const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'mont
   { path: '/playground', priority: 0.8, changeFrequency: 'monthly' },
   { path: '/pricing',                                  priority: 0.9, changeFrequency: 'monthly' },
   { path: '/use-case',                                 priority: 0.8, changeFrequency: 'monthly' },
+  // One page per industry and per integration (English copy: listed in English only, see localizeMetaEnglishOnly)
+  ...INDUSTRIES.map((i) => ({ path: `/use-case/${i.slug}`, priority: 0.8, changeFrequency: 'monthly' as const, englishOnly: true })),
   { path: '/integrations',                             priority: 0.8, changeFrequency: 'monthly' },
+  ...INTEGRATION_PAGES.map((i) => ({ path: `/integrations/${i.slug}`, priority: 0.7, changeFrequency: 'monthly' as const, englishOnly: true })),
+  { path: '/about',                                    priority: 0.6, changeFrequency: 'monthly', englishOnly: true },
+  { path: '/custom-ai',                                priority: 0.6, changeFrequency: 'monthly', englishOnly: true },
+  { path: '/referral',                                 priority: 0.5, changeFrequency: 'monthly', englishOnly: true },
+  { path: '/glossary',                                 priority: 0.7, changeFrequency: 'monthly', englishOnly: true },
   { path: '/roadmap',                                  priority: 0.5, changeFrequency: 'monthly' },
 
   // Blog hub (individual posts are added dynamically below)
   { path: '/blog',                                     priority: 0.8, changeFrequency: 'weekly'  },
+  // One page per topic of the Knowledge Hub. The two topics that are not about the product are not listed (they are noindex).
+  ...INDEXED_TOPICS.map((t) => ({ path: `/blog/topic/${t.slug}`, priority: 0.6, changeFrequency: 'weekly' as const, englishOnly: true })),
 
   // Support hub
   { path: '/support',                                  priority: 0.7, changeFrequency: 'monthly' },
@@ -72,8 +84,7 @@ const PAGES: { path: string; priority: number; changeFrequency: 'weekly' | 'mont
   // Free tools
   { path: '/tools/llm-cost-calculator',                priority: 0.8, changeFrequency: 'monthly' },
 
-  // Status & Utility
-  { path: '/status',                                   priority: 0.5, changeFrequency: 'weekly'  },
+  // Utility (the live status page is noindex, so it is not listed)
   { path: '/report-bug',                               priority: 0.4, changeFrequency: 'monthly' },
 
   // Legal (low priority, rarely changes)
@@ -116,7 +127,11 @@ export const dynamic = 'force-dynamic';
 export default function sitemap(): MetadataRoute.Sitemap {
   // A page's date should change only when the page does; stamping "now" on everything teaches Google to ignore it.
   const lastModified = new Date(SITE_UPDATED);
-  const pages = PAGES.flatMap((p) => entries(p.path, SITEMAP_LOCALES, LOCALES, { lastModified, changeFrequency: p.changeFrequency, priority: p.priority }));
+  const pages = PAGES.flatMap((p) =>
+    p.englishOnly
+      ? entries(p.path, ['en'], ['en'], { lastModified, changeFrequency: p.changeFrequency, priority: p.priority })
+      : entries(p.path, SITEMAP_LOCALES, LOCALES, { lastModified, changeFrequency: p.changeFrequency, priority: p.priority })
+  );
   // English articles join the sitemap a few per day (lib/blog/schedule.ts), so Google meets the site gradually instead of 275 pages
   // at once. A translated article (the few that exist in Spanish) is submitted from the start: there are only a dozen, and they are
   // written for readers who are not waiting for the English release.

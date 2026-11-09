@@ -112,7 +112,7 @@ export function Footer() {
               className="mk-footer-badge"
               href="https://www.codehype.ai/product/crescelo?utm_source=codehype_badge"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="nofollow noopener noreferrer"
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- third-party badge SVG, served as-is */}
               <img

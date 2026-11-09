@@ -12,7 +12,7 @@ import { ButtonLink, SectionHead } from '@/components/marketing/ui';
 export async function generateMetadata(): Promise<Metadata> {
   return localizeMeta(withSocial({
   alternates: { canonical: '/support/rag-knowledge' },
-  title: 'RAG Knowledge Base & Document Indexing Guide | Crescelo Support',
+  title: 'RAG Knowledge Base & Document Indexing Guide | Crescelo',
   description:
     'Learn how Crescelo indexes documents, scrapes live URLs, and uses hybrid vector retrieval to answer customer inquiries without hallucinations.',
 }, '/support/rag-knowledge'));

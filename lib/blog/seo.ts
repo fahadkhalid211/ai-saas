@@ -45,7 +45,17 @@ function reads(t: string): boolean {
   return !DANGLING.has(last) && !TRAILING_WORDS.has(last);
 }
 
-export function seoTitle(post: Pick<BlogPost, 'title'> & { primaryKeyword?: string }): string {
+/**
+ * Titles written by hand for articles where the generated one drops the words people search for. The generator shortens an article's
+ * title at a natural break and falls back to the keyword when the short form does not mention it; for these it chose a title that
+ * no longer matched the page's heading.
+ */
+export const SEO_TITLE_OVERRIDES: Record<string, string> = {
+  'ai-website-assistant-roi-calculator': 'AI Website Assistant ROI: Formulas & Examples | Crescelo',
+};
+
+export function seoTitle(post: Pick<BlogPost, 'title'> & { primaryKeyword?: string; slug?: string }): string {
+  if (post.slug && SEO_TITLE_OVERRIDES[post.slug]) return SEO_TITLE_OVERRIDES[post.slug];
   const t = seoTitleRaw(post);
   const bare = t.replace(/\s*\|\s*Crescelo$/, '');
   const kw = (post.primaryKeyword || '').trim();
@@ -87,6 +97,13 @@ export function seoDescription(text: string): string {
   const cut = clean.slice(0, DESC_MAX + 1);
   const sentence = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '));
   if (sentence >= 90) return cut.slice(0, sentence + 1);
+  // These descriptions are lists of topics ("wording, hours, policies and how to test"). Cutting at the last comma keeps whole items;
+  // cutting at the last word left endings like "...and how to keep." that read as unfinished in search results.
+  const comma = Math.max(cut.lastIndexOf(', '), cut.lastIndexOf('; '));
+  if (comma >= 110) {
+    const clause = trimTrailingFiller(cut.slice(0, comma).replace(/[.,;:]+$/, ''));
+    if (clause.length >= 110) return `${clause}.`;
+  }
   const word = trimTrailingFiller(cut.replace(/\s+\S*$/, '').replace(/[.,;:]+$/, ''));
   return word.endsWith('.') ? word : `${word}.`;
 }

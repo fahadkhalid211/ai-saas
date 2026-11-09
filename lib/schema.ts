@@ -3,6 +3,7 @@ import type { BlogPost } from '@/lib/blog/posts';
 import type { BlogCard } from '@/lib/blog/card';
 import { LEGAL } from '@/lib/legal/config';
 import { TRIAL_DAYS } from '@/lib/billing/trial';
+import { TEAM, articleAuthor, founders } from '@/lib/site/team';
 
 /** Structured data (schema.org JSON-LD) for search results. Everything is built from the same constants the pages show. */
 
@@ -20,6 +21,10 @@ export function organizationSchema() {
     // a square logo of at least 112px, as Google requires for the logo in results
     logo: { '@type': 'ImageObject', '@id': `${SITE.url}/#logo`, url: `${SITE.url}/icon-512.png`, contentUrl: `${SITE.url}/icon-512.png`, width: 512, height: 512, caption: SITE.name },
     image: { '@id': `${SITE.url}/#logo` },
+    ...(founders().length
+      ? { founder: founders().map((f) => ({ '@type': 'Person', name: f.name, jobTitle: f.role, ...(f.profileUrl ? { sameAs: [f.profileUrl] } : {}) })) }
+      : {}),
+    ...(TEAM.length ? { member: TEAM.map((m) => ({ '@type': 'Person', name: m.name, jobTitle: m.role })) } : {}),
     knowsAbout: ['AI website assistants', 'Appointment booking chatbots', 'Lead capture', 'Retrieval-augmented generation', 'Customer support automation'],
     contactPoint: [{ '@type': 'ContactPoint', contactType: 'customer support', url: `${SITE.url}${SITE.contactPath}`, availableLanguage: ['English'] }],
     ...(SITE.socials.length ? { sameAs: SITE.socials.map((s) => s.href) } : {}),
@@ -223,7 +228,10 @@ export function blogPostingSchema(post: BlogPost) {
     datePublished: isoDate(post.datePublished),
     dateModified: isoDate(post.dateModified),
     inLanguage: 'en',
-    author: { '@type': 'Organization', '@id': `${SITE.url}/#organization`, name: SITE.name, url: SITE.url },
+    // A named author when the people switch (lib/site/team.ts) has one; otherwise the organisation, which is the truth today.
+    author: articleAuthor()
+      ? { '@type': 'Person', name: articleAuthor()!.name, jobTitle: articleAuthor()!.role, ...(articleAuthor()!.profileUrl ? { url: articleAuthor()!.profileUrl } : {}) }
+      : { '@type': 'Organization', '@id': `${SITE.url}/#organization`, name: SITE.name, url: SITE.url },
     publisher: { '@id': `${SITE.url}/#organization` },
     isPartOf: { '@id': `${SITE.url}/blog#blog` },
     articleSection: post.clusterName || 'Knowledge Hub',

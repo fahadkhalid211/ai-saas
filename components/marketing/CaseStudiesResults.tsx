@@ -40,7 +40,7 @@ const CASE_STUDIES: CaseStudy[] = [
     icon: Scissors,
     businessType: 'Barbershop & Grooming Studio',
     headline: 'Calls that went to voicemail are now confirmed bookings',
-    subheadline: 'By answering pricing and open slots 24/7 on the website, 30+ previously missed weekly calls become confirmed bookings, generating $680 in additional revenue every month.',
+    subheadline: 'Example: if answering prices and open slots on the website turned 30 missed weekly enquiries into bookings at a 15% rate and a $35 ticket, that would be about $680 a month. Your numbers will differ.',
     primaryStat: { value: '+$680', label: 'Monthly Recovered Revenue' },
     metrics: [
       { value: '30+', label: 'inquiries handled weekly' },
@@ -185,13 +185,13 @@ export function CaseStudiesResults() {
         {/* Section Header */}
         <div className="mk-center-head text-center max-w-3xl mx-auto mb-14">
           <p className="text-xs font-extrabold uppercase tracking-widest text-[#0f6e58] dark:text-[#abff44] mb-3">
-            <T>Proven Business Results &amp; ROI</T>
+            <T>Worked examples</T>
           </p>
           <h2 id="results-title" className="text-3xl sm:text-5xl font-sans font-semibold tracking-tight text-[#08251a] dark:text-white leading-tight mb-4">
             <T>What changes when every visitor gets an answer</T>
           </h2>
           <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 leading-relaxed font-sans">
-            <T>Real before-and-after operational impacts showing how businesses turn missed inquiries into confirmed appointments, captured leads, and measurable revenue.</T>
+            <T>Illustrative before-and-after scenarios built from stated assumptions, not results from named customers. Use the ROI worksheet to work out your own numbers.</T>
           </p>
         </div>
 
@@ -232,7 +232,7 @@ export function CaseStudiesResults() {
                     <Icon size={18} />
                   </span>
                   <span className="text-xs font-bold uppercase tracking-wider text-[#abff44]">
-                    <T>Real Outcome</T> &bull; <T>{activeCase.businessType}</T>
+                    <T>Worked example</T> &bull; <T>{activeCase.businessType}</T>
                   </span>
                 </div>
                 <h3 className="text-2xl sm:text-3xl font-sans font-semibold tracking-tight text-white leading-tight">
@@ -332,9 +332,9 @@ export function CaseStudiesResults() {
                 <CheckCircle2 size={20} aria-hidden="true" />
               </span>
               <div className="space-y-1.5">
-                <p className="text-sm font-bold text-[#08251a] dark:text-[#abff44]"><T>Measurable ROI from day one.</T></p>
+                <p className="text-sm font-bold text-[#08251a] dark:text-[#abff44]"><T>Work out your own numbers.</T></p>
                 <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                  <T>Every unanswered visitor is lost revenue. By providing instant 24/7 answers and in-chat appointment booking, businesses consistently capture high-intent customers who would otherwise turn to competitors.</T>{' '}
+                  <T>A visitor who gets no answer may go to a competitor. Instant answers and in-chat booking can recover some of those enquiries; how many depends on your traffic, your prices and how quickly you reply today.</T>{' '}
                   <Link href="/blog/ai-website-assistant-roi-calculator" className="font-semibold underline underline-offset-2 text-[#0f6e58] dark:text-[#abff44]">
                     <T>Calculate your business ROI</T>
                   </Link>

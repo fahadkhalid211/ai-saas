@@ -52,6 +52,15 @@ Eval vs step 3 (hit@5 97.7%, MRR 0.771, AUC 0.74):
 Off by default: the gain is modest and the model has not been tried in a Vercel function (cold start, size). Its main value is a
 cleaner confidence score for step 5.
 
+### Models inside the deployment
+
+`npm run build` first runs `scripts/fetch-models.mjs`, which puts the bge embedding model and the cross-encoder (about 57 MB) in `./models`
+(git-ignored). `next.config.ts` ships them with the routes that need them (embedding routes get bge, the routes that search also get the
+cross-encoder; `lib/rag/embedding-routes.ts`, checked by a test), and `lib/rag/bundled-models.ts` makes the loaders read `./models` first.
+A cold start therefore loads from disk instead of downloading from Hugging Face. If `./models` is missing a file, that file is still
+downloaded at run time, and any other model (for example e5) is too. Check a deploy with the log line `[Embedder] Initializing`: it should be
+followed by no `Unable to load from local path` warning.
+
 ### Larger sets, English and Spanish (2026-11-03)
 
 73 English questions (`eval/rag/golden.ts`) and 77 Spanish ones (`eval/rag/golden-es.ts`, a dental clinic knowledge base).

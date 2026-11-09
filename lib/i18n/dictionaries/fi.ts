@@ -28,14 +28,14 @@ export const fiDict: TranslationDictionary = {
     globalDefault: 'Globaali (Englanti)',
   },
   hero: {
-    eyebrow: 'Verkkosivustoavustaja palveluyrityksille',
+    eyebrow: 'Tekoälyavustaja palveluyritysten verkkosivustoille',
     title: ['Vastaa jokaiselle vierailijalle.', 'Varaa heidät, jotka ovat valmiita.'],
     body: 'Välittömät vastaukset omasta sisällöstäsi. Oikeat varaukset suoraan kalenteriisi.\nTiimisi osallistuu vain silloin, kun sillä on todella väliä.',
     primaryCta: 'Aloita ilmainen kokeilu',
     secondaryCta: 'Kokeile ilmaista demoa',
     trust: [
       'Vastaa vain omasta sisällöstäsi – ei koskaan arvaile',
-      'Ilmainen aloittaa – ei laskentakustannuksia',
+      'Ilmainen 14 päivää: kortti vaaditaan, peruuta milloin tahansa',
       'Ihmisen haltuunotto yhdellä napsautuksella',
     ],
     turns: [
@@ -218,7 +218,7 @@ export const fiDict: TranslationDictionary = {
       },
       {
         q: 'Tarvitsenko oman tekoälypalveluntarjoajan tilin?',
-        a: 'Et. Voit aloittaa heti käyttämällä ilmaista sisäänrakennettua moottoriamme ilman asennusta tai korttia. Jos haluat mieluummin yhdistää oman OpenAI-, Google Gemini-, Anthropic- tai Groq-tilisi, voit liittää avaimesi ilman alustamaksuja.',
+        a: 'Et. Voit kokeilla heti ilmaisella sisäänrakennetulla moottorillamme ilman avainta tai asetuksia. Varsinaiseen avustajaasi yhdistät oman OpenAI-, Google Gemini-, Anthropic- tai Groq-tilisi (tai DeepSeekin tai oman mallin) liittämällä sen avaimen, jolloin palveluntarjoaja laskuttaa käytön suoraan omilla hinnoillaan eikä Crescelo lisää siihen katetta.',
       },
       {
         q: 'Voiko ihminen ottaa käynnissä olevan keskustelun haltuunsa?',

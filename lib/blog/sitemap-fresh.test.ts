@@ -8,7 +8,7 @@ afterEach(() => vi.useRealTimers());
 const articlesAt = (iso: string) => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date(iso));
-  return sitemap().filter((e) => e.url.includes('/blog/') && !/\/(sv|fi|it|es)\//.test(e.url)).length; // the English articles, which are released daily
+  return sitemap().filter((e) => e.url.includes('/blog/') && !e.url.includes('/blog/topic/') && !/\/(sv|fi|it|es)\//.test(e.url)).length; // the English articles, which are released daily
 };
 
 describe('the sitemap and the daily article release', () => {

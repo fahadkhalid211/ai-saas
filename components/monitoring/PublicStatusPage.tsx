@@ -381,11 +381,11 @@ export const PublicStatusPage: React.FC = () => {
             <Link href="/" className="hover:text-[#abff44] flex items-center gap-1 transition-colors">
               Crescelo Home <ArrowUpRight size={12} />
             </Link>
-            <Link href="/api/health" target="_blank" className="hover:text-[#abff44] flex items-center gap-1 transition-colors">
-              Raw Health API <ArrowUpRight size={12} />
+            <Link href="/support" className="hover:text-[#abff44] flex items-center gap-1 transition-colors">
+              Help center <ArrowUpRight size={12} />
             </Link>
-            <Link href="/dashboard" className="hover:text-[#abff44] flex items-center gap-1 transition-colors">
-              Developer Dashboard <ArrowUpRight size={12} />
+            <Link href="/support/contact" className="hover:text-[#abff44] flex items-center gap-1 transition-colors">
+              Contact support <ArrowUpRight size={12} />
             </Link>
           </div>
         </div>

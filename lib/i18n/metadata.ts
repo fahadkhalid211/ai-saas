@@ -45,3 +45,17 @@ export async function localizeMeta(meta: Metadata, options: { languages?: readon
     twitter: tw ? ({ ...tw, title: tr(str(tw.title)) ?? tw.title, description: tr(str(tw.description)) ?? tw.description } as Metadata['twitter']) : meta.twitter,
   };
 }
+
+/**
+ * For a page that exists only in English (its copy is not translated): the English address is the page, listed as the only language.
+ * The same text under another language's prefix (/es/...) is a duplicate of it, so that address points to the English page as its
+ * canonical and stays out of search results; it still works for visitors who arrive there.
+ */
+export async function localizeMetaEnglishOnly(meta: Metadata, options: { path?: string } = {}): Promise<Metadata> {
+  const locale = await getLocale();
+  const base = await localizeMeta(meta, { ...options, languages: ['en'] });
+  if (locale === 'en') return base;
+  const englishPath = splitLocale(options.path || str(meta.alternates?.canonical) || '/').path;
+  const english = `${SITE.url}${englishPath === '/' ? '' : englishPath}`;
+  return { ...base, alternates: { ...base.alternates, canonical: english }, robots: { index: false, follow: true } };
+}

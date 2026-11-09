@@ -23,34 +23,39 @@ const TOPIC_HUBS = [
     title: 'AI Platform Connectors & BYOK',
     desc: 'Step-by-step guides for connecting OpenAI, Anthropic Claude, Google Gemini, Groq, DeepSeek, and local Ollama.',
     href: '/support/ai-connectors',
+    cta: 'Connect OpenAI, Claude or Gemini →',
     tone: 'lime',
     count: '7 Guides',
   },
   {
-    title: 'Calendar Sync & Concurrency Locks',
-    desc: 'Connecting Google Calendar & Outlook, configuring buffer durations, and understanding atomic mutex slot locks.',
+    title: 'Calendar Booking & Calendar Feed',
+    desc: 'Setting opening hours and slot length, using Calendly or Cal.com, and subscribing to your bookings from Google, Outlook or Apple Calendar.',
     href: '/support/calendar-booking',
+    cta: 'Read the calendar booking guide →',
     tone: 'mint',
-    count: '4 Guides',
+    count: '1 Guide',
   },
   {
     title: 'Knowledge Base & RAG Indexing',
     desc: 'Uploading documents, scraping website URLs, and troubleshooting vector retrieval diagnostics.',
     href: '/support/rag-knowledge',
+    cta: 'Read the knowledge base guide →',
     tone: 'amber',
-    count: '5 Guides',
+    count: '1 Guide',
   },
   {
     title: 'Widget & Website Embedding',
     desc: 'Adding the script tag to WordPress, Shopify, Webflow, or custom HTML with custom brand colors.',
     href: '/guides/add-ai-assistant-to-wordpress',
+    cta: 'Add the widget to WordPress →',
     tone: 'pink',
-    count: '3 Guides',
+    count: '1 Guide',
   },
   {
     title: 'Omnichannel: WhatsApp & Telegram',
     desc: 'Connecting Meta WhatsApp Business Cloud webhooks and creating official Telegram bots.',
-    href: '/integrations',
+    href: '/integrations/whatsapp',
+    cta: 'Set up WhatsApp and Telegram →',
     tone: 'lime',
     count: '2 Guides',
   },
@@ -58,7 +63,7 @@ const TOPIC_HUBS = [
 
 const POPULAR_ARTICLES = [
   {
-    title: 'How to connect OpenAI (GPT-4o & GPT-4o-mini) to Crescelo',
+    title: 'How to connect OpenAI (GPT-5 and GPT-4o models) to Crescelo',
     href: '/support/ai-connectors/openai',
     cat: 'AI Models',
   },
@@ -73,7 +78,7 @@ const POPULAR_ARTICLES = [
     cat: 'AI Models',
   },
   {
-    title: 'How to connect Anthropic Claude 3.5 Sonnet & Haiku',
+    title: 'How to connect Anthropic Claude (Sonnet and Haiku) to Crescelo',
     href: '/support/ai-connectors/anthropic',
     cat: 'AI Models',
   },
@@ -99,10 +104,8 @@ export default function SupportPage() {
         <section className="mk-hero" style={{ marginTop: '12px' }}>
           <div className="mk-hero-glow" aria-hidden="true" />
           <div className="mk-wrap mk-hero-inner">
-            <p className="mk-eyebrow mk-rise" style={{ ['--mk-delay' as string]: '0ms' }}>
-              <T>HELP CENTER</T>
-            </p>
             <h1 className="mk-h1" style={{ maxWidth: '20ch', marginInline: 'auto' }}>
+              <span className="mk-h1-kicker"><T>Crescelo help center and documentation</T></span>{' '}
               <span className="mk-echo" style={{ ['--mk-delay' as string]: '140ms' }}>
                 <T>Find what you need.</T> <span className="mk-echo-em"><T>Get it working.</T></span>
               </span>
@@ -189,7 +192,7 @@ export default function SupportPage() {
                         gap: '6px',
                       }}
                     >
-                      <T>Read documentation →</T>
+                      <T>{hub.cta}</T>
                     </Link>
                   </div>
                 </Reveal>
