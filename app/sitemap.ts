@@ -15,7 +15,7 @@ import { INDEXED_TOPICS } from '@/lib/blog/topics';
  * 'sv', 'fi', 'it' here when those markets are next. A page's alternates always list every language it exists in, whichever are
  * submitted, so the sitemap and the page agree.
  */
-const SITEMAP_LOCALES: readonly SupportedLocale[] = ['en', 'es'];
+const SITEMAP_LOCALES: readonly SupportedLocale[] = ['en'];
 
 /** Translated articles whose text was rewritten after their English release date, so the sitemap says they changed. */
 const TRANSLATION_UPDATED: Record<string, string> = {

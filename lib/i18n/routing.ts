@@ -49,19 +49,14 @@ function startsWithAny(pathname: string, prefixes: string[]): boolean {
   return prefixes.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
 
-/** Whether the page exists in this language. All pages, including all blog articles, are served in every supported language with localized UI shell. */
-export function pageExistsIn(path: string, locale: SupportedLocale, translatedBlog?: RoutingInput['translatedBlog']): boolean {
-  if (locale === 'en') return true;
-  const m = path.match(/^\/blog\/([^/]+)\/?$/);
-  if (!m || m[1] === 'feed.xml') return true;
-  return true;
+/** Whether the page exists in this language. English is the only active language. */
+export function pageExistsIn(_path: string, locale: SupportedLocale, _translatedBlog?: RoutingInput['translatedBlog']): boolean {
+  return locale === 'en';
 }
 
 export function decideRoute(input: RoutingInput): RoutingDecision {
   const { pathname, search, host } = input;
   const split = splitLocale(pathname);
-  const savedRaw = input.cookies.locale;
-  const saved = savedRaw && isValidLocale(savedRaw) ? savedRaw : undefined;
   const isGet = input.method === 'GET' || input.method === 'HEAD';
 
   // status.crescelo.com serves the status page, always in English.
@@ -72,14 +67,9 @@ export function decideRoute(input: RoutingInput): RoutingDecision {
   // The blog feed is a file served from the English route.
   if (pathname === '/blog/feed.xml') return { action: 'rewrite', to: `/en/blog/feed.xml${search}` };
 
-  // ---- an address that carries a language ----
+  // ---- an address that carries a language prefix (/sv, /fi, /it, /es, /en) -> permanently redirect to canonical English root address ----
   if (split.locale) {
-    if (split.locale === 'en') return { action: 'redirect', to: `${split.path}${search}`, status: 308, private: false };
-    if (!isLocalizablePath(split.path)) return { action: 'redirect', to: `${split.path}${search}`, status: 308, private: false };
-    if (!pageExistsIn(split.path, split.locale, input.translatedBlog)) {
-      return { action: 'redirect', to: `${split.path}${search}`, status: 307, private: false };
-    }
-    return { action: 'pass' };
+    return { action: 'redirect', to: `${split.path}${search}`, status: 308, private: false };
   }
 
   // ---- no language in the address ----
@@ -90,41 +80,12 @@ export function decideRoute(input: RoutingInput): RoutingDecision {
 
   if (isAppPath(pathname)) {
     if (pathname === '/i18n' || pathname.startsWith('/i18n/') || pathname.startsWith('/api') || pathname.startsWith('/_next')) return { action: 'pass' };
-    if (startsWithAny(pathname, PREFERENCE_APP_PREFIXES)) {
-      const geo = resolveGeoLocale(input.country, input.acceptLanguage);
-      const loc: SupportedLocale = saved || (geo.isAutoDetected ? geo.locale : 'en');
-      return { action: 'rewrite', to: `/${loc}${pathname}${search}` };
-    }
     return { action: 'rewrite', to: `/en${pathname}${search}` };
   }
 
   if (!isLocalizablePath(pathname)) return { action: 'pass' };
 
-  const english: RoutingDecision = { action: 'rewrite', to: `/en${pathname}${search}` };
-  const to = (loc: SupportedLocale) => `${loc === 'en' ? '' : `/${loc}`}${pathname === '/' && loc !== 'en' ? '' : pathname}${search}`;
-
-  // A saved choice always wins.
-  if (saved) {
-    if (saved === 'en' || !pageExistsIn(pathname, saved, input.translatedBlog)) return english;
-    return { action: 'redirect', to: to(saved), status: 307, private: true };
-  }
-
-  // First visit: a person from a country we translate for is taken to their language, once. Crawlers and link previews are not.
-  const ua = input.userAgent || '';
-  if (BOT.test(ua) || !(input.accept || '').includes('text/html')) return english;
-  const geo = resolveGeoLocale(input.country, input.acceptLanguage);
-  if (!geo.isAutoDetected || geo.locale === 'en' || !pageExistsIn(pathname, geo.locale, input.translatedBlog)) return english;
-  return {
-    action: 'redirect',
-    to: to(geo.locale),
-    status: 307,
-    private: true,
-    cookies: [
-      { name: LOCALE_COOKIE, value: geo.locale },
-      { name: LOCALE_SOURCE_COOKIE, value: 'auto' },
-      { name: COUNTRY_COOKIE, value: geo.country },
-    ],
-  };
+  return { action: 'rewrite', to: `/en${pathname}${search}` };
 }
 
 export { LOCALES };

@@ -10,7 +10,7 @@
     "db:schema": "node scripts/apply-schema.mjs",
     "dev": "next dev",
     "prebuild": "node scripts/fetch-models.mjs",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run --fileParallelism=false",

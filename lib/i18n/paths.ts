@@ -8,12 +8,12 @@ import type { SupportedLocale } from './types';
  * No imports from next/* here: this file is read by the proxy (edge), by server components and by client components.
  */
 
-export const LOCALES: readonly SupportedLocale[] = ['en', 'sv', 'fi', 'it', 'es'];
+export const LOCALES: readonly SupportedLocale[] = ['en'];
 export const DEFAULT_LOCALE_CODE: SupportedLocale = 'en';
-export const PREFIXED_LOCALES: readonly SupportedLocale[] = ['sv', 'fi', 'it', 'es'];
+export const PREFIXED_LOCALES: readonly SupportedLocale[] = [];
 
 export function isLocaleCode(value: unknown): value is SupportedLocale {
-  return typeof value === 'string' && (LOCALES as readonly string[]).includes(value);
+  return value === 'en';
 }
 
 /**
@@ -77,7 +77,7 @@ export function splitLocale(pathname: string): SplitPath {
  * The address of a page in a language. Anything that is not a public page of this site (other sites, mailto:, the dashboard,
  * files, "#section" links) is returned unchanged.
  */
-export function localizeHref(href: string, locale: SupportedLocale): string {
+export function localizeHref(href: string, _locale?: SupportedLocale): string {
   if (!href || typeof href !== 'string') return href;
   if (!href.startsWith('/') || href.startsWith('//')) return href;
   const hashAt = href.search(/[?#]/);
@@ -85,8 +85,7 @@ export function localizeHref(href: string, locale: SupportedLocale): string {
   const tail = hashAt === -1 ? '' : href.slice(hashAt);
   const { path } = splitLocale(pathname);
   if (!isLocalizablePath(path)) return href;
-  if (locale === 'en') return (path === '/' && tail ? '/' : path) + tail;
-  return (path === '/' ? `/${locale}` : `/${locale}${path}`) + tail;
+  return (path === '/' && tail ? '/' : path) + tail;
 }
 
 /** The same page in every language, for hreflang and the language switcher. */

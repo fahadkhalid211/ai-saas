@@ -34,13 +34,13 @@ export function translatedSlugs(locale: SupportedLocale): string[] {
   return [...((manifest as Record<string, string[]>)[locale] ?? [])];
 }
 
-export function hasBlogTranslation(locale: SupportedLocale, slug: string): boolean {
-  return locale === 'en' || translatedSlugs(locale).includes(slug);
+export function hasBlogTranslation(locale: SupportedLocale, _slug: string): boolean {
+  return locale === 'en';
 }
 
-/** The languages an article is available in, English first. All published articles are reachable in all supported locales. */
+/** The languages an article is available in: English only. */
 export function blogLanguages(_slug?: string): SupportedLocale[] {
-  return ['en', 'sv', 'fi', 'it', 'es'];
+  return ['en'];
 }
 
 export async function loadTranslation(locale: SupportedLocale, slug: string): Promise<BlogTranslation | null> {

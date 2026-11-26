@@ -1,10 +1,10 @@
 import { CATALOGS, catalogVersion } from '@/lib/i18n/server';
-import { isLocaleCode } from '@/lib/i18n/paths';
+import { isLocaleCode, PREFIXED_LOCALES } from '@/lib/i18n/paths';
 
 export const dynamic = 'force-static';
 
 export function generateStaticParams() {
-  return (['sv', 'fi', 'it', 'es'] as const).map((l) => ({ file: `${l}.js` }));
+  return PREFIXED_LOCALES.map((l) => ({ file: `${l}.js` }));
 }
 
 /** /i18n/sv.js: the Swedish catalog as a script that sets globalThis.__I18N, cached for a year (the ?v= changes when it does). */

@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useI18n } from '@/lib/i18n/context';
 import { SUPPORTED_LOCALES, type SupportedLocale } from '@/lib/i18n/types';
+import { LOCALES } from '@/lib/i18n/paths';
 import { ChevronDown, Check } from 'lucide-react';
 import { Flag } from './Flag';
 
@@ -13,6 +14,10 @@ interface LanguageSwitcherProps {
 }
 
 export function LanguageSwitcher({ variant = 'navbar', direction, className = '' }: LanguageSwitcherProps) {
+  if (LOCALES.length <= 1) {
+    return null;
+  }
+
   const { locale, setLocale, dict } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
